@@ -2,16 +2,18 @@
 
 ```python
 PyDBMS
-├── sql/            # 处理 SQL 解析与执行
-│   ├── parser.py   # SQL 解析模块
-│   ├── executor.py # SQL 执行模块
-├── storage/        # 数据存储引擎
-│   ├── engine.py   # 数据存储逻辑
-├── transaction/    # 事务管理与日志记录
-│   ├── log.py      # 日志管理
+├── algebra/           # 处理关系代数解析与执行
+│   ├── parser.py      # 关系代数解析模块
+│   ├── executor.py    # 关系代数执行模块
+├── storage/           # 数据存储引擎
+│   ├── engine.py      # 数据存储逻辑
+├── transaction/       # 事务管理与日志记录
+│   ├── log.py         # 日志管理
 │   ├── transaction.py # 事务管理
-├── server.py       # 主服务，处理客户端请求
-└── README.md       # 项目文档
+├── gui/               # PyQt5 GUI 相关文件
+│   ├── mainwindow.py  # 主窗口逻辑
+├── server.py          # 主服务，处理客户端请求
+└── README.md          # 项目文档
 ```
 
 #### 1. **确定项目范围**
