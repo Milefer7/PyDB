@@ -22,10 +22,10 @@ class AlgebraLexer(Lexer):
 class SqlLexer(Lexer):
     # Regular expression rules for tokens
     tokens = {
-        'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'INSERT', 'INTO', 'VALUES',
+        'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'INSERT', 'INTO', 'VALUES',
         'UPDATE', 'SET', 'DELETE', 'CREATE', 'TABLE', 'DROP', 'JOIN',
         'ON', 'AS', 'ORDER', 'BY', 'GROUP', 'HAVING', 'LIMIT',
-        'IDENTIFIER', 'NUMBER', 'STRING', 'OPERATOR', 'SEPARATOR'
+        'IDENTIFIER', 'NUMBER', 'STRING', 'OPERATOR', 'SEPARATOR', 'DESC'
     }
 
     # SQL keywords
@@ -34,6 +34,7 @@ class SqlLexer(Lexer):
     WHERE = r'WHERE'
     AND = r'AND'
     OR = r'OR'
+    NOT = r'NOT'
     INSERT = r'INSERT'
     INTO = r'INTO'
     VALUES = r'VALUES'
@@ -51,6 +52,7 @@ class SqlLexer(Lexer):
     GROUP = r'GROUP'
     HAVING = r'HAVING'
     LIMIT = r'LIMIT'
+    DESC = r'DESC'  # 降序
 
     # 标识符（表名、列名等）
     IDENTIFIER = r'[a-zA-Z_][a-zA-Z0-9_]*'
@@ -59,14 +61,14 @@ class SqlLexer(Lexer):
     NUMBER = r'[0-9]+(\.[0-9]+)?'  # 整数或浮点数
     STRING = r'\'[^\']*\''  # 用单引号括起来的字符串常量
 
-    # 操作符（比较、算术、逻辑）
-    OPERATOR = r'[=<>!~%^&|+\-*/]'
+    # 操作符
+    OPERATOR = r'(<=|>=|<>|!=|=|<|>|\+|-|\*|/|%)'
 
-    # 分隔符（括号、逗号等）
+    # 分隔符（括号、逗号、点号）
     SEPARATOR = r'[(),.]'
 
-    # 忽略空白字符和换行符
-    ignore = ' \t\n'
+    # 忽略空白字符和换行符和行末分号
+    ignore = ' ;\t\n'
 
     # 定义一些未识别字符的错误处理
     def error(self, value):
@@ -74,58 +76,58 @@ class SqlLexer(Lexer):
         self.index += 1
 
 
-# # sql语法分析器
-# class SqlParser(Parser):
-#     tokens = SQLLexer.tokens
-#
-#     # 解析SQL的语法规则
-#     @_('INSERT INTO IDENTIFIER "(" column_list ")" VALUES "(" value_list ")"')
-#     def insert(self, p):
-#         return ('insert', p.IDENTIFIER, p.column_list, p.value_list)
-#
-#     @_('SELECT column_list FROM IDENTIFIER WHERE condition')
-#     def select(self, p):
-#         return ('select', p.column_list, p.IDENTIFIER, p.condition)
-#
-#     @_('UPDATE IDENTIFIER SET assign_list WHERE condition')
-#     def update(self, p):
-#         return ('update', p.IDENTIFIER, p.assign_list, p.condition)
-#
-#     @_('DELETE FROM IDENTIFIER WHERE condition')
-#     def delete(self, p):
-#         return ('delete', p.IDENTIFIER, p.condition)
-#
-#     @_('IDENTIFIER "=" value')
-#     def condition(self, p):
-#         return ('condition', p.IDENTIFIER, p.value)
-#
-#     @_('IDENTIFIER "=" value')
-#     def assign_list(self, p):
-#         return ('assign', p.IDENTIFIER, p.value)
-#
-#     @_('column_list "," IDENTIFIER')
-#     def column_list(self, p):
-#         return p.column_list + [p.IDENTIFIER]
-#
-#     @_('IDENTIFIER')
-#     def column_list(self, p):
-#         return [p.IDENTIFIER]
-#
-#     @_('value_list "," value')
-#     def value_list(self, p):
-#         return p.value_list + [p.value]
-#
-#     @_('value')
-#     def value_list(self, p):
-#         return [p.value]
-#
-#     @_('NUMBER')
-#     def value(self, p):
-#         return int(p.NUMBER)
-#
-#     @_('STRING')
-#     def value(self, p):
-#         return p.STRING
+# sql语法分析器
+class SqlParser(Parser):
+    tokens = SqlLexer.tokens
+
+    # 解析SQL的语法规则
+    @_('INSERT INTO IDENTIFIER "(" column_list ")" VALUES "(" value_list ")"')
+    def insert(self, p):
+        return ('insert', p.IDENTIFIER, p.column_list, p.value_list)
+
+    @_('SELECT column_list FROM IDENTIFIER WHERE condition')
+    def select(self, p):
+        return ('select', p.column_list, p.IDENTIFIER, p.condition)
+
+    @_('UPDATE IDENTIFIER SET assign_list WHERE condition')
+    def update(self, p):
+        return ('update', p.IDENTIFIER, p.assign_list, p.condition)
+
+    @_('DELETE FROM IDENTIFIER WHERE condition')
+    def delete(self, p):
+        return ('delete', p.IDENTIFIER, p.condition)
+
+    @_('IDENTIFIER "=" value')
+    def condition(self, p):
+        return 'condition', p.IDENTIFIER, p.value
+
+    @_('IDENTIFIER "=" value')
+    def assign_list(self, p):
+        return 'assign', p.IDENTIFIER, p.value
+
+    @_('column_list "," IDENTIFIER')
+    def column_list(self, p):
+        return p.column_list + [p.IDENTIFIER]
+
+    @_('IDENTIFIER')
+    def column_list(self, p):
+        return [p.IDENTIFIER]
+
+    @_('value_list "," value')
+    def value_list(self, p):
+        return p.value_list + [p.value]
+
+    @_('value')
+    def value_list(self, p):
+        return [p.value]
+
+    @_('NUMBER')
+    def value(self, p):
+        return int(p.NUMBER)
+
+    @_('STRING')
+    def value(self, p):
+        return p.STRING
 
 
 if __name__ == '__main__':
@@ -138,6 +140,9 @@ if __name__ == '__main__':
     # Delete（删）：删除数据
     data_d1 = "DELETE FROM users WHERE age < 20;"
 
+    data_list = [data_d1, data_r1, data_u1, data_d1]
     lexer = SqlLexer()
-    for tok in lexer.tokenize(data_c1):
-        print('type=%r, value=%r' % (tok.type, tok.value))
+    for data in data_list:
+        for tok in lexer.tokenize(data):
+            print('type=%r, value=%r' % (tok.type, tok.value))
+        print('----------------------------------------------')
