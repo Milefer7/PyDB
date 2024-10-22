@@ -3,8 +3,8 @@
 ```python
 PyDBMS
 ├── algebra/           # 处理关系代数解析与执行
-│   ├── parser.py      # 关系代数解析模块
-│   ├── executor.py    # 关系代数执行模块
+│   ├── parser.py      # sql解析模块
+│   ├── executor.py    # sql执行模块
 ├── storage/           # 数据存储引擎
 │   ├── engine.py      # 数据存储逻辑
 ├── transaction/       # 事务管理与日志记录
