@@ -23,39 +23,9 @@ class AlgebraLexer(Lexer):
 class SqlLexer(Lexer):
     # Regular expression rules for tokens
     tokens = {
-        'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'INSERT', 'INTO', 'VALUES',
-        'UPDATE', 'SET', 'DELETE', 'CREATE', 'TABLE', 'DROP', 'JOIN',
-        'ON', 'AS', 'ORDER', 'BY', 'GROUP', 'HAVING', 'LIMIT',
-        'IDENTIFIER', 'NUMBER', 'STRING', 'OPERATOR', 'SEPARATOR', 'DESC', 'CREATE',
-        'DATABASE'
+        'IDENTIFIER', 'NUMBER', 'STRING', 'OPERATOR', 'SEPARATOR',
+        'CREATE', 'DATABASES', 'DATABASE', 'SHOW', 'USE',
     }
-
-    # SQL keywords
-    CREATE = r'CREATE'
-    DATABASE = r'DATABASE'
-    SELECT = r'SELECT'
-    FROM = r'FROM'
-    WHERE = r'WHERE'
-    AND = r'AND'
-    OR = r'OR'
-    NOT = r'NOT'
-    INSERT = r'INSERT'
-    INTO = r'INTO'
-    VALUES = r'VALUES'
-    UPDATE = r'UPDATE'
-    SET = r'SET'
-    DELETE = r'DELETE'
-    TABLE = r'TABLE'
-    DROP = r'DROP'
-    JOIN = r'JOIN'
-    ON = r'ON'
-    AS = r'AS'
-    ORDER = r'ORDER'
-    BY = r'BY'
-    GROUP = r'GROUP'
-    HAVING = r'HAVING'
-    LIMIT = r'LIMIT'
-    DESC = r'DESC'  # 降序
 
     # 标识符（数据库名，表名，列名等）
     IDENTIFIER = r'[a-zA-Z_][a-zA-Z0-9_]*'
@@ -70,6 +40,13 @@ class SqlLexer(Lexer):
     # 分隔符（括号、逗号、点号）
     SEPARATOR = r'[(),.]'
 
+    # SQL 关键字
+    CREATE = r'CREATE'
+    DATABASES = r'DATABASES'
+    DATABASE = r'DATABASE'
+    SHOW = r'SHOW'
+    USE = r'USE'
+
     # 忽略空白字符和换行符和行末分号
     ignore = ' ;\t\n'
 
@@ -83,9 +60,23 @@ class SqlLexer(Lexer):
 class SqlParser(Parser):
     tokens = SqlLexer.tokens
 
+    def __init__(self, db: DatabaseManager):
+        self.db: DatabaseManager = db
+
     # 解析SQL的语法规则
+    @_('SHOW DATABASES')
+    def show_databases(self, p):
+        return DatabaseManager.show_database()
 
     # 创建数据库
     @_('CREATE DATABASE IDENTIFIER')
     def create_database(self, p):
-        executor_create_database(p.IDENTIFIER)
+        # return DatabaseManager.create_database(p.IDENTIFIER)
+        create_database(p.IDENTIFIER)
+
+    # @_('CREATE TABLE IDENTIFIER')
+    # def create_table(self, p):
+
+    @_('USE IDENTIFIER')
+    def use_database(self, p):
+        return self.db.use_database(p.IDENTIFIER)
