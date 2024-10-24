@@ -7,12 +7,9 @@ from .executor import *
 class SqlLexer(Lexer):
     # Regular expression rules for tokens
     tokens = {
-        'USE', 'DATABASES', 'SHOW',
-        'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'INSERT', 'INTO', 'VALUES',
-        'UPDATE', 'SET', 'DELETE', 'CREATE', 'TABLE', 'DROP', 'JOIN',
-        'ON', 'AS', 'ORDER', 'BY', 'GROUP', 'HAVING', 'LIMIT',
-        'IDENTIFIER', 'NUMBER', 'STRING', 'OPERATOR', 'SEPARATOR', 'DESC',
-        'DATABASE'
+        'USE', 'DATABASES', 'SHOW', 'CREATE', 'DATABASE',
+        'IDENTIFIER', 'NUMBER', 'STRING', 'OPERATOR', 'SEPARATOR',
+
     }
 
     # SQL keywords
@@ -21,29 +18,6 @@ class SqlLexer(Lexer):
     SHOW = r'SHOW'
     CREATE = r'CREATE'
     DATABASE = r'DATABASE'
-    SELECT = r'SELECT'
-    FROM = r'FROM'
-    WHERE = r'WHERE'
-    AND = r'AND'
-    OR = r'OR'
-    NOT = r'NOT'
-    INSERT = r'INSERT'
-    INTO = r'INTO'
-    VALUES = r'VALUES'
-    UPDATE = r'UPDATE'
-    SET = r'SET'
-    DELETE = r'DELETE'
-    TABLE = r'TABLE'
-    DROP = r'DROP'
-    JOIN = r'JOIN'
-    ON = r'ON'
-    AS = r'AS'
-    ORDER = r'ORDER'
-    BY = r'BY'
-    GROUP = r'GROUP'
-    HAVING = r'HAVING'
-    LIMIT = r'LIMIT'
-    DESC = r'DESC'  # 降序
 
     # 标识符（数据库名，表名，列名等）
     IDENTIFIER = r'[a-zA-Z_][a-zA-Z0-9_]*'
@@ -81,11 +55,11 @@ class SqlParser(Parser):
     # def create_database(self, p):
     #     return DatabaseManager.create_database(p.IDENTIFIER)
 
-    # @_('USE IDENTIFIER')
-    # def use_database(self, p):
-    #     return self.db.select_database(p.IDENTIFIER)
+    @_('USE IDENTIFIER')
+    def use_database(self, p):
+        return self.db.select_database(p.IDENTIFIER)
 
-    @_('SHOW DATABASES')
-    def show_databases(self, p):
-        return DatabaseManager.show_database()
+    # @_('SHOW DATABASES')
+    # def show_databases(self, p):
+    #     return DatabaseManager.show_database()
 
