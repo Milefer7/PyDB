@@ -7,9 +7,8 @@ from .executor import *
 class SqlLexer(Lexer):
     # Regular expression rules for tokens
     tokens = {
-        'USE', 'DATABASES', 'SHOW', 'CREATE', 'DATABASE',
-        'IDENTIFIER', 'NUMBER', 'STRING', 'OPERATOR', 'SEPARATOR',
-
+        'DATABASES', 'IDENTIFIER', 'SEPARATOR', 'OPERATOR', 'DATABASE',
+        'NUMBER', 'STRING', 'CREATE', 'SHOW', 'USE'
     }
 
     # SQL keywords
@@ -48,18 +47,18 @@ class SqlParser(Parser):
     def __init__(self, db):
         self.db = db
 
-    # 解析SQL的语法规则
-
-    # 创建数据库
-    # @_('CREATE DATABASE IDENTIFIER')
-    # def create_database(self, p):
-    #     return DatabaseManager.create_database(p.IDENTIFIER)
-
     @_('USE IDENTIFIER')
     def use_database(self, p):
-        return self.db.select_database(p.IDENTIFIER)
+        self.db.select_database(p.IDENTIFIER)
+        return
 
-    # @_('SHOW DATABASES')
-    # def show_databases(self, p):
-    #     return DatabaseManager.show_database()
+    # 解析SQL的语法规则
+    @_('CREATE DATABASE IDENTIFIER')
+    def create_database(self, p):
+        DatabaseManager.create_database(p.IDENTIFIER)
+        return
 
+    @_('SHOW DATABASES')
+    def show_databases(self, p):
+        DatabaseManager.show_database()
+        return

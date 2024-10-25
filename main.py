@@ -8,13 +8,13 @@ from algebra.parser import *
 
 if __name__ == '__main__':
     db = DatabaseManager()
-    user_input = 'USE test;'
-    # user_input = 'CREATE DATABASE test;'
+    # user_input = 'USE test;'
+    user_input = 'CREATE DATABASE test;'
     # user_input = 'SHOW DATABASES;'
     lexer = SqlLexer()
     parser = SqlParser(db)
     tokens = lexer.tokenize(user_input)
-    # for tok in tokens:
-    #     print(f"Token Type: {tok.type}, Token Value: {tok.value}")
-    # print(tokens)
-    parser.parse(tokens)
+    for tok in tokens:
+        print(f"Token Type: {tok.type}, Token Value: {tok.value}")
+    print(tokens)
+    # parser.parse(tokens)
