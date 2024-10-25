@@ -50,15 +50,29 @@ class SqlParser(Parser):
     @_('USE IDENTIFIER')
     def use_database(self, p):
         self.db.select_database(p.IDENTIFIER)
-        return
+        # print(f'{p.USE}, {p.IDENTIFIER}')
+        return p.USE, p.IDENTIFIER  # 返回 USE, test
 
     # 解析SQL的语法规则
     @_('CREATE DATABASE IDENTIFIER')
     def create_database(self, p):
         DatabaseManager.create_database(p.IDENTIFIER)
-        return
+        return p.CREATE, p.DATABASE, p.IDENTIFIER
 
     @_('SHOW DATABASES')
     def show_databases(self, p):
         DatabaseManager.show_database()
-        return
+        return p.SHOW, p.DATABASES
+
+    # @_('IDENTIFIER')
+    # def identifier(self, p):
+    #     return p.IDENTIFIER
+    #
+    # @_('CREATE')
+    # def create(self, p):
+    #     return p.CREATE
+    #
+    # @_('DATABASE')
+    # def database(self, p):
+    #     return p.DATABASE
+
