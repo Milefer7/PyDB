@@ -10,13 +10,13 @@ import json
 if __name__ == '__main__':
     db = DatabaseManager()
 
-    user_input = 'USE test;'
+    # user_input = 'USE test;'
 
-    # user_input = 'CREATE DATABASE test_db '
+    user_input = 'CREATE DATABASE test_db '
 
     # user_input = 'SHOW DATABASES USE test_db;'
 
-    # user_input = 'SHOW DATABASES;'
+    user_input = 'SHOW DATABASES;'
 
     # user_input = """
     # CREATE TABLE employees (
@@ -35,9 +35,8 @@ if __name__ == '__main__':
     # ORDER BY age DESC;
     # """
 
-    # user_input = 'salary DECIMAL(10, 2),'
     lexer = SqlLexer()
-    parser = SqlParser(db)
+    parser = SqlShowParser(db)
     tokens = lexer.tokenize(user_input)
     # for tok in tokens:
     #     print(f"Token Type: {tok.type}, Token Value: {tok.value}")

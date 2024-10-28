@@ -62,7 +62,7 @@ class SqlLexer(Lexer):
 
 
 # SQL 语法分析器
-class SqlParser(Parser):
+class SqlUseParser(Parser):
     tokens = SqlLexer.tokens
 
     def __init__(self, db):
@@ -71,6 +71,39 @@ class SqlParser(Parser):
     # 使用数据库
     @_('USE IDENTIFIER')
     def use_database(self, p):
-        return {"type": "use_database", "database_name": p.IDENTIFIER}
+        return {
+            "type": "use_database",
+            "database_name": p.IDENTIFIER
+        }
+
+    # 创建数据库
 
 
+class SqlCreateParser(Parser):
+    tokens = SqlLexer.tokens
+
+    def __init__(self, db):
+        self.db = db
+
+    # 使用数据库
+    @_('CREATE DATABASE IDENTIFIER')
+    def create_database(self, p):
+        return {
+            "type": "create_database",
+            "database_name": p.IDENTIFIER
+        }
+
+
+
+class SqlShowParser(Parser):
+    tokens = SqlLexer.tokens
+
+    def __init__(self, db):
+        self.db = db
+
+    # 显示数据库
+    @_('SHOW DATABASES')
+    def show_databases(self, p):
+        return {
+            "type": "show_databases"
+        }
