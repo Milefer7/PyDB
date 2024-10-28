@@ -24,7 +24,7 @@ if __name__ == '__main__':
     """
     # user_input = 'salary DECIMAL(10, 2),'
     lexer = SqlLexer()
-    parser = SqlParser(db)
+    # parser = SqlParser(db)
     tokens = lexer.tokenize(user_input)
     for tok in tokens:
         print(f"Token Type: {tok.type}, Token Value: {tok.value}")
