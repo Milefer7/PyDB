@@ -6,6 +6,7 @@ from .executor import *
 # SQL 词法分析器
 class SqlLexer(Lexer):
     # 正则表达式规则
+
     tokens = {
         'DATABASES', 'DATABASE', 'SHOW', 'USE',
 
