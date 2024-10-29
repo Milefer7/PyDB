@@ -85,14 +85,73 @@ class SqlCreateParser(Parser):
     def __init__(self, db):
         self.db = db
 
-    # 使用数据库
-    @_('CREATE DATABASE IDENTIFIER')
-    def create_database(self, p):
+    # 创建表
+    @_('CREATE TABLE IDENTIFIER "(" columns ")"')
+    def create_table(self, p):
         return {
-            "type": "create_database",
-            "database_name": p.IDENTIFIER
+            "type": "create_table",
+            "table_name": p.IDENTIFIER,
+            "columns": p.columns
         }
 
+    @_('column column_list')
+    def columns(self, p):
+        return {
+            "columns": [p.column] + p.column_list  # 收集所有列
+        }
+
+    @_('"," column column_list')
+    def column_list(self, p):
+        return [p.column] + p.column_list  # 收集多个列
+
+    @_('"," column')
+    def column_list(self, p):
+        return [p.column]  # 处理最后一个列
+
+    @_('')
+    def column_list(self, p):
+        return []  # 处理最后一个列
+
+    @_('IDENTIFIER data_type constraints')
+    def column(self, p):
+        return {
+            "name": p.IDENTIFIER,
+            "data_type": p.data_type,
+            "constraints": p.constraints
+        }
+
+    @_('INT')
+    def data_type(self, p):
+        return 'int'
+
+    @_('VARCHAR "(" NUMBER ")"')
+    def data_type(self, p):
+        return f'varchar({p.NUMBER})'
+
+    @_('DECIMAL "(" NUMBER "," NUMBER ")"')
+    def data_type(self, p):
+        return f'DECIMAL({p[2]}, {p[4]})'
+
+    # 处理多个约束
+    @_('constraint constraints')
+    def constraints(self, p):
+        return [p.constraint] + p.constraints  # 收集多个约束
+
+    @_('constraint')
+    def constraints(self, p):
+        return [p.constraint]  # 单个约束
+
+    @_('')  # 空处理
+    def constraints(self, p):
+        return []  # 返回空约束列表
+
+    @_('PRIMARY_KEY')
+    def constraint(self, p):
+        return 'primary key'  # 返回单个约束
+
+    @_('NOT_NULL')
+    def constraint(self, p):
+        return 'not null'  # 返回单个约束
 
 
 class SqlShowParser(Parser):

@@ -12,20 +12,18 @@ if __name__ == '__main__':
 
     # user_input = 'USE test;'
 
-    user_input = 'CREATE DATABASE test_db '
+    # user_input = 'CREATE DATABASE test_db '
 
-    # user_input = 'SHOW DATABASES USE test_db;'
+    # user_input = 'SHOW DATABASES;'
 
-    user_input = 'SHOW DATABASES;'
-
-    # user_input = """
-    # CREATE TABLE employees (
-    #     id INT PRIMARY KEY NOT NULL,
-    #     name VARCHAR(100) NOT NULL,
-    #     salary DECIMAL(10, 2),
-    #     department VARCHAR(50)
-    # );
-    # """
+    user_input = """
+    CREATE TABLE employees (
+        id INT PRIMARY KEY NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        salary DECIMAL(10, 2),
+        department VARCHAR(50)
+    );
+    """
 
     # user_input = """
     # SELECT name, age
@@ -36,9 +34,9 @@ if __name__ == '__main__':
     # """
 
     lexer = SqlLexer()
-    parser = SqlShowParser(db)
+    parser = SqlCreateParser(db)
     tokens = lexer.tokenize(user_input)
     # for tok in tokens:
-    #     print(f"Token Type: {tok.type}, Token Value: {tok.value}")
+        # print(f"Token Type: {tok.type}, Token Value: {tok.value}")
     parser_tree = parser.parse(tokens)
     print(json.dumps(parser_tree, indent=2))
