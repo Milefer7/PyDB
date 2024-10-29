@@ -85,6 +85,12 @@ class SqlCreateParser(Parser):
     def __init__(self, db):
         self.db = db
 
+    # @_('CREATE DATABASE IDENTIFIER')
+    # def create_database(self, p):
+    #     return {
+    #             "type": "create_database",
+    #             "database_name": p.IDENTIFIER
+    #     }
     # 创建表
     @_('CREATE TABLE IDENTIFIER "(" columns ")"')
     def create_table(self, p):
