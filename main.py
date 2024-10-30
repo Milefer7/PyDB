@@ -34,7 +34,7 @@ if __name__ == '__main__':
     # """
 
     lexer = SqlLexer()
-    parser = SqlCreateParser(db)
+    parser = SqlParser(db)
     tokens = lexer.tokenize(user_input)
     # for tok in tokens:
         # print(f"Token Type: {tok.type}, Token Value: {tok.value}")

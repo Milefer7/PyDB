@@ -62,11 +62,45 @@ class SqlLexer(Lexer):
 
 
 # SQL 语法分析器
-class SqlUseParser(Parser):
+# class SqlUseParser(Parser):
+#     tokens = SqlLexer.tokens
+#
+#     def __init__(self, db):
+#         self.db = db
+#
+#     # 使用数据库
+#     @_('USE IDENTIFIER')
+#     def use_database(self, p):
+#         return {
+#             "type": "use_database",
+#             "database_name": p.IDENTIFIER
+#         }
+#
+#     # 创建数据库
+
+
+class SqlParser(Parser):
     tokens = SqlLexer.tokens
 
     def __init__(self, db):
         self.db = db
+
+    # 顶层规则
+    @_('create_database')
+    def statement(self, p):
+        return p.create_database
+
+    @_('create_table')
+    def statement(self, p):
+        return p.create_table
+
+    @_('show_databases')
+    def statement(self, p):
+        return p.show_databases
+
+    @_('use_database')
+    def statement(self, p):
+        return p.use_database
 
     # 使用数据库
     @_('USE IDENTIFIER')
@@ -76,21 +110,20 @@ class SqlUseParser(Parser):
             "database_name": p.IDENTIFIER
         }
 
-    # 创建数据库
+    # 显示数据库
+    @_('SHOW DATABASES')
+    def show_databases(self, p):
+        return {
+            "type": "show_databases"
+        }
 
+    @_('CREATE DATABASE IDENTIFIER')
+    def create_database(self, p):
+        return {
+            "type": "create_database",
+            "database_name": p.IDENTIFIER
+        }
 
-class SqlCreateParser(Parser):
-    tokens = SqlLexer.tokens
-
-    def __init__(self, db):
-        self.db = db
-
-    # @_('CREATE DATABASE IDENTIFIER')
-    # def create_database(self, p):
-    #     return {
-    #             "type": "create_database",
-    #             "database_name": p.IDENTIFIER
-    #     }
     # 创建表
     @_('CREATE TABLE IDENTIFIER "(" columns ")"')
     def create_table(self, p):
@@ -160,15 +193,15 @@ class SqlCreateParser(Parser):
         return 'not null'  # 返回单个约束
 
 
-class SqlShowParser(Parser):
-    tokens = SqlLexer.tokens
-
-    def __init__(self, db):
-        self.db = db
-
-    # 显示数据库
-    @_('SHOW DATABASES')
-    def show_databases(self, p):
-        return {
-            "type": "show_databases"
-        }
+# class SqlShowParser(Parser):
+#     tokens = SqlLexer.tokens
+#
+#     def __init__(self, db):
+#         self.db = db
+#
+#     # 显示数据库
+#     @_('SHOW DATABASES')
+#     def show_databases(self, p):
+#         return {
+#             "type": "show_databases"
+#         }
