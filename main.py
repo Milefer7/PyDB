@@ -10,20 +10,20 @@ import json
 if __name__ == '__main__':
     db = DatabaseManager()
 
-    user_input = 'USE test;'
+    # user_input = 'USE test;'
+    #
+    # user_input = 'CREATE DATABASE test_db '
+    #
+    # user_input = 'SHOW DATABASES;'
 
-    user_input = 'CREATE DATABASE test_db '
-
-    user_input = 'SHOW DATABASES;'
-
-    # user_input = """
-    # CREATE TABLE employees (
-    #     id INT PRIMARY KEY NOT NULL,
-    #     name VARCHAR(100) NOT NULL,
-    #     salary DECIMAL(10, 2),
-    #     department VARCHAR(50)
-    # );
-    # """
+    user_input = """
+    CREATE TABLE employees (
+        id INT PRIMARY KEY NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        salary DECIMAL(10, 2),
+        department VARCHAR(50)
+    );
+    """
 
     # user_input = """
     # SELECT name, age
