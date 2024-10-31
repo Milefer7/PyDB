@@ -1,0 +1,1227 @@
+Grammar:
+
+Rule 0     S' -> statement
+Rule 1     statement -> select_data
+Rule 2     statement -> insert_data
+Rule 3     statement -> use_database
+Rule 4     statement -> show_databases
+Rule 5     statement -> create_table
+Rule 6     statement -> create_database
+Rule 7     use_database -> USE IDENTIFIER
+Rule 8     show_databases -> SHOW DATABASES
+Rule 9     create_database -> CREATE DATABASE IDENTIFIER
+Rule 10    create_table -> CREATE TABLE IDENTIFIER ( create_columns )
+Rule 11    create_columns -> create_column
+Rule 12    create_columns -> create_column , create_columns
+Rule 13    create_column -> IDENTIFIER data_type constraints
+Rule 14    data_type -> DECIMAL ( NUMBER , NUMBER )
+Rule 15    data_type -> VARCHAR ( NUMBER )
+Rule 16    data_type -> INT
+Rule 17    constraints -> <empty>
+Rule 18    constraints -> constraint
+Rule 19    constraints -> constraint constraints
+Rule 20    constraint -> NOT_NULL
+Rule 21    constraint -> PRIMARY_KEY
+Rule 22    insert_data -> INSERT INTO IDENTIFIER ( data_columns ) insert_clause
+Rule 23    insert_clause -> VALUES values_clause
+Rule 24    insert_clause -> SELECT select_data
+Rule 25    values_clause -> ( datas )
+Rule 26    values_clause -> ( datas ) , values_clause
+Rule 27    datas -> data
+Rule 28    datas -> datas , data
+Rule 29    data -> ' IDENTIFIER '
+Rule 30    data -> NUMBER
+Rule 31    select_data -> subquery_select
+Rule 32    select_data -> join_select
+Rule 33    select_data -> ordered_select
+Rule 34    select_data -> conditional_select
+Rule 35    select_data -> simple_select
+Rule 36    select_data -> select_all
+Rule 37    select_all -> SELECT * FROM IDENTIFIER
+Rule 38    simple_select -> SELECT data_columns FROM IDENTIFIER
+Rule 39    conditional_select -> SELECT data_columns FROM IDENTIFIER WHERE conditions
+Rule 40    ordered_select -> SELECT data_columns FROM IDENTIFIER ORDER_BY order_columns
+Rule 41    order_columns -> IDENTIFIER DESC
+Rule 42    order_columns -> IDENTIFIER ASC
+Rule 43    join_select -> SELECT data_columns FROM table_with_alias join_clause
+Rule 44    subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data )
+Rule 45    data_columns -> <empty>
+Rule 46    data_columns -> data_column data_columns
+Rule 47    data_column -> IDENTIFIER
+Rule 48    data_column -> IDENTIFIER ,
+Rule 49    conditions -> <empty>
+Rule 50    conditions -> condition conditions
+Rule 51    condition -> condition_clause
+Rule 52    condition -> condition OR condition_clause  [precedence=left, level=1]
+Rule 53    condition -> condition AND condition_clause  [precedence=left, level=2]
+Rule 54    condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+Rule 55    condition_clause -> IDENTIFIER OPERATOR value
+Rule 56    value -> ' IDENTIFIER '
+Rule 57    value -> NUMBER
+Rule 58    value -> IDENTIFIER
+Rule 59    join_clause -> JOIN table_with_alias ON condition
+Rule 60    table_with_alias -> IDENTIFIER
+Rule 61    table_with_alias -> IDENTIFIER IDENTIFIER
+
+Unused terminals:
+
+    FLOAT
+    LIMIT
+    TIMESTAMP
+    DOUBLE
+
+Terminals, with rules where they appear:
+
+'                    : 29 29 56 56
+(                    : 10 14 15 22 25 26 44
+)                    : 10 14 15 22 25 26 44
+*                    : 37
+,                    : 12 14 26 28 48
+.                    : 54 54
+AND                  : 53
+ASC                  : 42
+CREATE               : 9 10
+DATABASE             : 9
+DATABASES            : 8
+DECIMAL              : 14
+DESC                 : 41
+DOUBLE               : 
+FLOAT                : 
+FROM                 : 37 38 39 40 43 44
+IDENTIFIER           : 7 9 10 13 22 29 37 38 39 40 41 42 44 44 47 48 54 54 54 54 55 56 58 60 61 61
+IN                   : 44
+INSERT               : 22
+INT                  : 16
+INTO                 : 22
+JOIN                 : 59
+LIMIT                : 
+NOT_NULL             : 20
+NUMBER               : 14 14 15 30 57
+ON                   : 59
+OPERATOR             : 54 55
+OR                   : 52
+ORDER_BY             : 40
+PRIMARY_KEY          : 21
+SELECT               : 24 37 38 39 40 43 44
+SHOW                 : 8
+TABLE                : 10
+TIMESTAMP            : 
+USE                  : 7
+VALUES               : 23
+VARCHAR              : 15
+WHERE                : 39 44
+error                : 
+
+Nonterminals, with rules where they appear:
+
+condition            : 50 52 53 59
+condition_clause     : 51 52 53
+conditional_select   : 34
+conditions           : 39 50
+constraint           : 18 19
+constraints          : 13 19
+create_column        : 11 12
+create_columns       : 10 12
+create_database      : 6
+create_table         : 5
+data                 : 27 28
+data_column          : 46
+data_columns         : 22 38 39 40 43 44 46
+data_type            : 13
+datas                : 25 26 28
+insert_clause        : 22
+insert_data          : 2
+join_clause          : 43
+join_select          : 32
+order_columns        : 40
+ordered_select       : 33
+select_all           : 36
+select_data          : 1 24 44
+show_databases       : 4
+simple_select        : 35
+statement            : 0
+subquery_select      : 31
+table_with_alias     : 43 59
+use_database         : 3
+value                : 55
+values_clause        : 23 26
+
+
+state 0
+
+    (0) S' -> . statement
+    (1) statement -> . select_data
+    (2) statement -> . insert_data
+    (3) statement -> . use_database
+    (4) statement -> . show_databases
+    (5) statement -> . create_table
+    (6) statement -> . create_database
+    (31) select_data -> . subquery_select
+    (32) select_data -> . join_select
+    (33) select_data -> . ordered_select
+    (34) select_data -> . conditional_select
+    (35) select_data -> . simple_select
+    (36) select_data -> . select_all
+    (22) insert_data -> . INSERT INTO IDENTIFIER ( data_columns ) insert_clause
+    (7) use_database -> . USE IDENTIFIER
+    (8) show_databases -> . SHOW DATABASES
+    (10) create_table -> . CREATE TABLE IDENTIFIER ( create_columns )
+    (9) create_database -> . CREATE DATABASE IDENTIFIER
+    (44) subquery_select -> . SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data )
+    (43) join_select -> . SELECT data_columns FROM table_with_alias join_clause
+    (40) ordered_select -> . SELECT data_columns FROM IDENTIFIER ORDER_BY order_columns
+    (39) conditional_select -> . SELECT data_columns FROM IDENTIFIER WHERE conditions
+    (38) simple_select -> . SELECT data_columns FROM IDENTIFIER
+    (37) select_all -> . SELECT * FROM IDENTIFIER
+    INSERT          shift and go to state 14
+    USE             shift and go to state 15
+    SHOW            shift and go to state 16
+    CREATE          shift and go to state 17
+    SELECT          shift and go to state 18
+
+    statement                      shift and go to state 1
+    select_data                    shift and go to state 2
+    insert_data                    shift and go to state 3
+    use_database                   shift and go to state 4
+    show_databases                 shift and go to state 5
+    create_table                   shift and go to state 6
+    create_database                shift and go to state 7
+    subquery_select                shift and go to state 8
+    join_select                    shift and go to state 9
+    ordered_select                 shift and go to state 10
+    conditional_select             shift and go to state 11
+    simple_select                  shift and go to state 12
+    select_all                     shift and go to state 13
+
+state 1
+
+    (0) S' -> statement .
+
+
+state 2
+
+    (1) statement -> select_data .
+    $end            reduce using rule 1 (statement -> select_data .)
+
+
+state 3
+
+    (2) statement -> insert_data .
+    $end            reduce using rule 2 (statement -> insert_data .)
+
+
+state 4
+
+    (3) statement -> use_database .
+    $end            reduce using rule 3 (statement -> use_database .)
+
+
+state 5
+
+    (4) statement -> show_databases .
+    $end            reduce using rule 4 (statement -> show_databases .)
+
+
+state 6
+
+    (5) statement -> create_table .
+    $end            reduce using rule 5 (statement -> create_table .)
+
+
+state 7
+
+    (6) statement -> create_database .
+    $end            reduce using rule 6 (statement -> create_database .)
+
+
+state 8
+
+    (31) select_data -> subquery_select .
+    $end            reduce using rule 31 (select_data -> subquery_select .)
+    )               reduce using rule 31 (select_data -> subquery_select .)
+
+
+state 9
+
+    (32) select_data -> join_select .
+    $end            reduce using rule 32 (select_data -> join_select .)
+    )               reduce using rule 32 (select_data -> join_select .)
+
+
+state 10
+
+    (33) select_data -> ordered_select .
+    $end            reduce using rule 33 (select_data -> ordered_select .)
+    )               reduce using rule 33 (select_data -> ordered_select .)
+
+
+state 11
+
+    (34) select_data -> conditional_select .
+    $end            reduce using rule 34 (select_data -> conditional_select .)
+    )               reduce using rule 34 (select_data -> conditional_select .)
+
+
+state 12
+
+    (35) select_data -> simple_select .
+    $end            reduce using rule 35 (select_data -> simple_select .)
+    )               reduce using rule 35 (select_data -> simple_select .)
+
+
+state 13
+
+    (36) select_data -> select_all .
+    $end            reduce using rule 36 (select_data -> select_all .)
+    )               reduce using rule 36 (select_data -> select_all .)
+
+
+state 14
+
+    (22) insert_data -> INSERT . INTO IDENTIFIER ( data_columns ) insert_clause
+    INTO            shift and go to state 19
+
+
+state 15
+
+    (7) use_database -> USE . IDENTIFIER
+    IDENTIFIER      shift and go to state 20
+
+
+state 16
+
+    (8) show_databases -> SHOW . DATABASES
+    DATABASES       shift and go to state 21
+
+
+state 17
+
+    (10) create_table -> CREATE . TABLE IDENTIFIER ( create_columns )
+    (9) create_database -> CREATE . DATABASE IDENTIFIER
+    TABLE           shift and go to state 22
+    DATABASE        shift and go to state 23
+
+
+state 18
+
+    (44) subquery_select -> SELECT . data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data )
+    (43) join_select -> SELECT . data_columns FROM table_with_alias join_clause
+    (40) ordered_select -> SELECT . data_columns FROM IDENTIFIER ORDER_BY order_columns
+    (39) conditional_select -> SELECT . data_columns FROM IDENTIFIER WHERE conditions
+    (38) simple_select -> SELECT . data_columns FROM IDENTIFIER
+    (37) select_all -> SELECT . * FROM IDENTIFIER
+    (45) data_columns -> .
+    (46) data_columns -> . data_column data_columns
+    (47) data_column -> . IDENTIFIER
+    (48) data_column -> . IDENTIFIER ,
+    *               shift and go to state 26
+    FROM            reduce using rule 45 (data_columns -> .)
+    IDENTIFIER      shift and go to state 25
+
+    data_columns                   shift and go to state 24
+    data_column                    shift and go to state 27
+
+state 19
+
+    (22) insert_data -> INSERT INTO . IDENTIFIER ( data_columns ) insert_clause
+    IDENTIFIER      shift and go to state 28
+
+
+state 20
+
+    (7) use_database -> USE IDENTIFIER .
+    $end            reduce using rule 7 (use_database -> USE IDENTIFIER .)
+
+
+state 21
+
+    (8) show_databases -> SHOW DATABASES .
+    $end            reduce using rule 8 (show_databases -> SHOW DATABASES .)
+
+
+state 22
+
+    (10) create_table -> CREATE TABLE . IDENTIFIER ( create_columns )
+    IDENTIFIER      shift and go to state 29
+
+
+state 23
+
+    (9) create_database -> CREATE DATABASE . IDENTIFIER
+    IDENTIFIER      shift and go to state 30
+
+
+state 24
+
+    (44) subquery_select -> SELECT data_columns . FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data )
+    (43) join_select -> SELECT data_columns . FROM table_with_alias join_clause
+    (40) ordered_select -> SELECT data_columns . FROM IDENTIFIER ORDER_BY order_columns
+    (39) conditional_select -> SELECT data_columns . FROM IDENTIFIER WHERE conditions
+    (38) simple_select -> SELECT data_columns . FROM IDENTIFIER
+    FROM            shift and go to state 31
+
+
+state 25
+
+    (47) data_column -> IDENTIFIER .
+    (48) data_column -> IDENTIFIER . ,
+    IDENTIFIER      reduce using rule 47 (data_column -> IDENTIFIER .)
+    FROM            reduce using rule 47 (data_column -> IDENTIFIER .)
+    )               reduce using rule 47 (data_column -> IDENTIFIER .)
+    ,               shift and go to state 32
+
+
+state 26
+
+    (37) select_all -> SELECT * . FROM IDENTIFIER
+    FROM            shift and go to state 33
+
+
+state 27
+
+    (46) data_columns -> data_column . data_columns
+    (45) data_columns -> .
+    (46) data_columns -> . data_column data_columns
+    (47) data_column -> . IDENTIFIER
+    (48) data_column -> . IDENTIFIER ,
+    FROM            reduce using rule 45 (data_columns -> .)
+    )               reduce using rule 45 (data_columns -> .)
+    IDENTIFIER      shift and go to state 25
+
+    data_column                    shift and go to state 27
+    data_columns                   shift and go to state 34
+
+state 28
+
+    (22) insert_data -> INSERT INTO IDENTIFIER . ( data_columns ) insert_clause
+    (               shift and go to state 35
+
+
+state 29
+
+    (10) create_table -> CREATE TABLE IDENTIFIER . ( create_columns )
+    (               shift and go to state 36
+
+
+state 30
+
+    (9) create_database -> CREATE DATABASE IDENTIFIER .
+    $end            reduce using rule 9 (create_database -> CREATE DATABASE IDENTIFIER .)
+
+
+state 31
+
+    (44) subquery_select -> SELECT data_columns FROM . IDENTIFIER WHERE IDENTIFIER IN ( select_data )
+    (43) join_select -> SELECT data_columns FROM . table_with_alias join_clause
+    (40) ordered_select -> SELECT data_columns FROM . IDENTIFIER ORDER_BY order_columns
+    (39) conditional_select -> SELECT data_columns FROM . IDENTIFIER WHERE conditions
+    (38) simple_select -> SELECT data_columns FROM . IDENTIFIER
+    (60) table_with_alias -> . IDENTIFIER
+    (61) table_with_alias -> . IDENTIFIER IDENTIFIER
+    IDENTIFIER      shift and go to state 37
+
+    table_with_alias               shift and go to state 38
+
+state 32
+
+    (48) data_column -> IDENTIFIER , .
+    IDENTIFIER      reduce using rule 48 (data_column -> IDENTIFIER , .)
+    FROM            reduce using rule 48 (data_column -> IDENTIFIER , .)
+    )               reduce using rule 48 (data_column -> IDENTIFIER , .)
+
+
+state 33
+
+    (37) select_all -> SELECT * FROM . IDENTIFIER
+    IDENTIFIER      shift and go to state 39
+
+
+state 34
+
+    (46) data_columns -> data_column data_columns .
+    FROM            reduce using rule 46 (data_columns -> data_column data_columns .)
+    )               reduce using rule 46 (data_columns -> data_column data_columns .)
+
+
+state 35
+
+    (22) insert_data -> INSERT INTO IDENTIFIER ( . data_columns ) insert_clause
+    (45) data_columns -> .
+    (46) data_columns -> . data_column data_columns
+    (47) data_column -> . IDENTIFIER
+    (48) data_column -> . IDENTIFIER ,
+    )               reduce using rule 45 (data_columns -> .)
+    IDENTIFIER      shift and go to state 25
+
+    data_columns                   shift and go to state 40
+    data_column                    shift and go to state 27
+
+state 36
+
+    (10) create_table -> CREATE TABLE IDENTIFIER ( . create_columns )
+    (11) create_columns -> . create_column
+    (12) create_columns -> . create_column , create_columns
+    (13) create_column -> . IDENTIFIER data_type constraints
+    IDENTIFIER      shift and go to state 41
+
+    create_columns                 shift and go to state 42
+    create_column                  shift and go to state 43
+
+state 37
+
+    (44) subquery_select -> SELECT data_columns FROM IDENTIFIER . WHERE IDENTIFIER IN ( select_data )
+    (40) ordered_select -> SELECT data_columns FROM IDENTIFIER . ORDER_BY order_columns
+    (39) conditional_select -> SELECT data_columns FROM IDENTIFIER . WHERE conditions
+    (38) simple_select -> SELECT data_columns FROM IDENTIFIER .
+    (60) table_with_alias -> IDENTIFIER .
+    (61) table_with_alias -> IDENTIFIER . IDENTIFIER
+    WHERE           shift and go to state 45
+    ORDER_BY        shift and go to state 46
+    $end            reduce using rule 38 (simple_select -> SELECT data_columns FROM IDENTIFIER .)
+    )               reduce using rule 38 (simple_select -> SELECT data_columns FROM IDENTIFIER .)
+    JOIN            reduce using rule 60 (table_with_alias -> IDENTIFIER .)
+    IDENTIFIER      shift and go to state 44
+
+
+state 38
+
+    (43) join_select -> SELECT data_columns FROM table_with_alias . join_clause
+    (59) join_clause -> . JOIN table_with_alias ON condition
+    JOIN            shift and go to state 48
+
+    join_clause                    shift and go to state 47
+
+state 39
+
+    (37) select_all -> SELECT * FROM IDENTIFIER .
+    $end            reduce using rule 37 (select_all -> SELECT * FROM IDENTIFIER .)
+    )               reduce using rule 37 (select_all -> SELECT * FROM IDENTIFIER .)
+
+
+state 40
+
+    (22) insert_data -> INSERT INTO IDENTIFIER ( data_columns . ) insert_clause
+    )               shift and go to state 49
+
+
+state 41
+
+    (13) create_column -> IDENTIFIER . data_type constraints
+    (14) data_type -> . DECIMAL ( NUMBER , NUMBER )
+    (15) data_type -> . VARCHAR ( NUMBER )
+    (16) data_type -> . INT
+    DECIMAL         shift and go to state 51
+    VARCHAR         shift and go to state 52
+    INT             shift and go to state 53
+
+    data_type                      shift and go to state 50
+
+state 42
+
+    (10) create_table -> CREATE TABLE IDENTIFIER ( create_columns . )
+    )               shift and go to state 54
+
+
+state 43
+
+    (11) create_columns -> create_column .
+    (12) create_columns -> create_column . , create_columns
+    )               reduce using rule 11 (create_columns -> create_column .)
+    ,               shift and go to state 55
+
+
+state 44
+
+    (61) table_with_alias -> IDENTIFIER IDENTIFIER .
+    JOIN            reduce using rule 61 (table_with_alias -> IDENTIFIER IDENTIFIER .)
+    ON              reduce using rule 61 (table_with_alias -> IDENTIFIER IDENTIFIER .)
+
+
+state 45
+
+    (44) subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE . IDENTIFIER IN ( select_data )
+    (39) conditional_select -> SELECT data_columns FROM IDENTIFIER WHERE . conditions
+    (49) conditions -> .
+    (50) conditions -> . condition conditions
+    (51) condition -> . condition_clause
+    (52) condition -> . condition OR condition_clause
+    (53) condition -> . condition AND condition_clause
+    (54) condition_clause -> . IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+    (55) condition_clause -> . IDENTIFIER OPERATOR value
+    IDENTIFIER      shift and go to state 56
+    $end            reduce using rule 49 (conditions -> .)
+    )               reduce using rule 49 (conditions -> .)
+
+    conditions                     shift and go to state 57
+    condition                      shift and go to state 58
+    condition_clause               shift and go to state 59
+
+state 46
+
+    (40) ordered_select -> SELECT data_columns FROM IDENTIFIER ORDER_BY . order_columns
+    (41) order_columns -> . IDENTIFIER DESC
+    (42) order_columns -> . IDENTIFIER ASC
+    IDENTIFIER      shift and go to state 60
+
+    order_columns                  shift and go to state 61
+
+state 47
+
+    (43) join_select -> SELECT data_columns FROM table_with_alias join_clause .
+    $end            reduce using rule 43 (join_select -> SELECT data_columns FROM table_with_alias join_clause .)
+    )               reduce using rule 43 (join_select -> SELECT data_columns FROM table_with_alias join_clause .)
+
+
+state 48
+
+    (59) join_clause -> JOIN . table_with_alias ON condition
+    (60) table_with_alias -> . IDENTIFIER
+    (61) table_with_alias -> . IDENTIFIER IDENTIFIER
+    IDENTIFIER      shift and go to state 63
+
+    table_with_alias               shift and go to state 62
+
+state 49
+
+    (22) insert_data -> INSERT INTO IDENTIFIER ( data_columns ) . insert_clause
+    (23) insert_clause -> . VALUES values_clause
+    (24) insert_clause -> . SELECT select_data
+    VALUES          shift and go to state 65
+    SELECT          shift and go to state 66
+
+    insert_clause                  shift and go to state 64
+
+state 50
+
+    (13) create_column -> IDENTIFIER data_type . constraints
+    (17) constraints -> .
+    (18) constraints -> . constraint
+    (19) constraints -> . constraint constraints
+    (20) constraint -> . NOT_NULL
+    (21) constraint -> . PRIMARY_KEY
+    ,               reduce using rule 17 (constraints -> .)
+    )               reduce using rule 17 (constraints -> .)
+    NOT_NULL        shift and go to state 69
+    PRIMARY_KEY     shift and go to state 70
+
+    constraints                    shift and go to state 67
+    constraint                     shift and go to state 68
+
+state 51
+
+    (14) data_type -> DECIMAL . ( NUMBER , NUMBER )
+    (               shift and go to state 71
+
+
+state 52
+
+    (15) data_type -> VARCHAR . ( NUMBER )
+    (               shift and go to state 72
+
+
+state 53
+
+    (16) data_type -> INT .
+    NOT_NULL        reduce using rule 16 (data_type -> INT .)
+    PRIMARY_KEY     reduce using rule 16 (data_type -> INT .)
+    ,               reduce using rule 16 (data_type -> INT .)
+    )               reduce using rule 16 (data_type -> INT .)
+
+
+state 54
+
+    (10) create_table -> CREATE TABLE IDENTIFIER ( create_columns ) .
+    $end            reduce using rule 10 (create_table -> CREATE TABLE IDENTIFIER ( create_columns ) .)
+
+
+state 55
+
+    (12) create_columns -> create_column , . create_columns
+    (11) create_columns -> . create_column
+    (12) create_columns -> . create_column , create_columns
+    (13) create_column -> . IDENTIFIER data_type constraints
+    IDENTIFIER      shift and go to state 41
+
+    create_column                  shift and go to state 43
+    create_columns                 shift and go to state 73
+
+state 56
+
+    (44) subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER . IN ( select_data )
+    (54) condition_clause -> IDENTIFIER . . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+    (55) condition_clause -> IDENTIFIER . OPERATOR value
+    IN              shift and go to state 74
+    .               shift and go to state 75
+    OPERATOR        shift and go to state 76
+
+
+state 57
+
+    (39) conditional_select -> SELECT data_columns FROM IDENTIFIER WHERE conditions .
+    $end            reduce using rule 39 (conditional_select -> SELECT data_columns FROM IDENTIFIER WHERE conditions .)
+    )               reduce using rule 39 (conditional_select -> SELECT data_columns FROM IDENTIFIER WHERE conditions .)
+
+
+state 58
+
+    (50) conditions -> condition . conditions
+    (52) condition -> condition . OR condition_clause
+    (53) condition -> condition . AND condition_clause
+    (49) conditions -> .
+    (50) conditions -> . condition conditions
+    (51) condition -> . condition_clause
+    (52) condition -> . condition OR condition_clause
+    (53) condition -> . condition AND condition_clause
+    (54) condition_clause -> . IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+    (55) condition_clause -> . IDENTIFIER OPERATOR value
+    OR              shift and go to state 78
+    AND             shift and go to state 79
+    $end            reduce using rule 49 (conditions -> .)
+    )               reduce using rule 49 (conditions -> .)
+    IDENTIFIER      shift and go to state 80
+
+    condition                      shift and go to state 58
+    conditions                     shift and go to state 77
+    condition_clause               shift and go to state 59
+
+state 59
+
+    (51) condition -> condition_clause .
+    OR              reduce using rule 51 (condition -> condition_clause .)
+    AND             reduce using rule 51 (condition -> condition_clause .)
+    IDENTIFIER      reduce using rule 51 (condition -> condition_clause .)
+    $end            reduce using rule 51 (condition -> condition_clause .)
+    )               reduce using rule 51 (condition -> condition_clause .)
+
+
+state 60
+
+    (41) order_columns -> IDENTIFIER . DESC
+    (42) order_columns -> IDENTIFIER . ASC
+    DESC            shift and go to state 81
+    ASC             shift and go to state 82
+
+
+state 61
+
+    (40) ordered_select -> SELECT data_columns FROM IDENTIFIER ORDER_BY order_columns .
+    $end            reduce using rule 40 (ordered_select -> SELECT data_columns FROM IDENTIFIER ORDER_BY order_columns .)
+    )               reduce using rule 40 (ordered_select -> SELECT data_columns FROM IDENTIFIER ORDER_BY order_columns .)
+
+
+state 62
+
+    (59) join_clause -> JOIN table_with_alias . ON condition
+    ON              shift and go to state 83
+
+
+state 63
+
+    (60) table_with_alias -> IDENTIFIER .
+    (61) table_with_alias -> IDENTIFIER . IDENTIFIER
+    ON              reduce using rule 60 (table_with_alias -> IDENTIFIER .)
+    IDENTIFIER      shift and go to state 44
+
+
+state 64
+
+    (22) insert_data -> INSERT INTO IDENTIFIER ( data_columns ) insert_clause .
+    $end            reduce using rule 22 (insert_data -> INSERT INTO IDENTIFIER ( data_columns ) insert_clause .)
+
+
+state 65
+
+    (23) insert_clause -> VALUES . values_clause
+    (25) values_clause -> . ( datas )
+    (26) values_clause -> . ( datas ) , values_clause
+    (               shift and go to state 85
+
+    values_clause                  shift and go to state 84
+
+state 66
+
+    (24) insert_clause -> SELECT . select_data
+    (31) select_data -> . subquery_select
+    (32) select_data -> . join_select
+    (33) select_data -> . ordered_select
+    (34) select_data -> . conditional_select
+    (35) select_data -> . simple_select
+    (36) select_data -> . select_all
+    (44) subquery_select -> . SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data )
+    (43) join_select -> . SELECT data_columns FROM table_with_alias join_clause
+    (40) ordered_select -> . SELECT data_columns FROM IDENTIFIER ORDER_BY order_columns
+    (39) conditional_select -> . SELECT data_columns FROM IDENTIFIER WHERE conditions
+    (38) simple_select -> . SELECT data_columns FROM IDENTIFIER
+    (37) select_all -> . SELECT * FROM IDENTIFIER
+    SELECT          shift and go to state 18
+
+    select_data                    shift and go to state 86
+    subquery_select                shift and go to state 8
+    join_select                    shift and go to state 9
+    ordered_select                 shift and go to state 10
+    conditional_select             shift and go to state 11
+    simple_select                  shift and go to state 12
+    select_all                     shift and go to state 13
+
+state 67
+
+    (13) create_column -> IDENTIFIER data_type constraints .
+    ,               reduce using rule 13 (create_column -> IDENTIFIER data_type constraints .)
+    )               reduce using rule 13 (create_column -> IDENTIFIER data_type constraints .)
+
+
+state 68
+
+    (18) constraints -> constraint .
+    (19) constraints -> constraint . constraints
+    (17) constraints -> .
+    (18) constraints -> . constraint
+    (19) constraints -> . constraint constraints
+    (20) constraint -> . NOT_NULL
+    (21) constraint -> . PRIMARY_KEY
+  ! reduce/reduce conflict for , resolved using rule 18 (constraints -> constraint .)
+  ! reduce/reduce conflict for ) resolved using rule 18 (constraints -> constraint .)
+    ,               reduce using rule 18 (constraints -> constraint .)
+    )               reduce using rule 18 (constraints -> constraint .)
+    NOT_NULL        shift and go to state 69
+    PRIMARY_KEY     shift and go to state 70
+
+    constraint                     shift and go to state 68
+    constraints                    shift and go to state 87
+
+state 69
+
+    (20) constraint -> NOT_NULL .
+    NOT_NULL        reduce using rule 20 (constraint -> NOT_NULL .)
+    PRIMARY_KEY     reduce using rule 20 (constraint -> NOT_NULL .)
+    ,               reduce using rule 20 (constraint -> NOT_NULL .)
+    )               reduce using rule 20 (constraint -> NOT_NULL .)
+
+
+state 70
+
+    (21) constraint -> PRIMARY_KEY .
+    NOT_NULL        reduce using rule 21 (constraint -> PRIMARY_KEY .)
+    PRIMARY_KEY     reduce using rule 21 (constraint -> PRIMARY_KEY .)
+    ,               reduce using rule 21 (constraint -> PRIMARY_KEY .)
+    )               reduce using rule 21 (constraint -> PRIMARY_KEY .)
+
+
+state 71
+
+    (14) data_type -> DECIMAL ( . NUMBER , NUMBER )
+    NUMBER          shift and go to state 88
+
+
+state 72
+
+    (15) data_type -> VARCHAR ( . NUMBER )
+    NUMBER          shift and go to state 89
+
+
+state 73
+
+    (12) create_columns -> create_column , create_columns .
+    )               reduce using rule 12 (create_columns -> create_column , create_columns .)
+
+
+state 74
+
+    (44) subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN . ( select_data )
+    (               shift and go to state 90
+
+
+state 75
+
+    (54) condition_clause -> IDENTIFIER . . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+    IDENTIFIER      shift and go to state 91
+
+
+state 76
+
+    (55) condition_clause -> IDENTIFIER OPERATOR . value
+    (56) value -> . ' IDENTIFIER '
+    (57) value -> . NUMBER
+    (58) value -> . IDENTIFIER
+    '               shift and go to state 94
+    NUMBER          shift and go to state 95
+    IDENTIFIER      shift and go to state 92
+
+    value                          shift and go to state 93
+
+state 77
+
+    (50) conditions -> condition conditions .
+    $end            reduce using rule 50 (conditions -> condition conditions .)
+    )               reduce using rule 50 (conditions -> condition conditions .)
+
+
+state 78
+
+    (52) condition -> condition OR . condition_clause
+    (54) condition_clause -> . IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+    (55) condition_clause -> . IDENTIFIER OPERATOR value
+    IDENTIFIER      shift and go to state 80
+
+    condition_clause               shift and go to state 96
+
+state 79
+
+    (53) condition -> condition AND . condition_clause
+    (54) condition_clause -> . IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+    (55) condition_clause -> . IDENTIFIER OPERATOR value
+    IDENTIFIER      shift and go to state 80
+
+    condition_clause               shift and go to state 97
+
+state 80
+
+    (54) condition_clause -> IDENTIFIER . . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+    (55) condition_clause -> IDENTIFIER . OPERATOR value
+    .               shift and go to state 75
+    OPERATOR        shift and go to state 76
+
+
+state 81
+
+    (41) order_columns -> IDENTIFIER DESC .
+    $end            reduce using rule 41 (order_columns -> IDENTIFIER DESC .)
+    )               reduce using rule 41 (order_columns -> IDENTIFIER DESC .)
+
+
+state 82
+
+    (42) order_columns -> IDENTIFIER ASC .
+    $end            reduce using rule 42 (order_columns -> IDENTIFIER ASC .)
+    )               reduce using rule 42 (order_columns -> IDENTIFIER ASC .)
+
+
+state 83
+
+    (59) join_clause -> JOIN table_with_alias ON . condition
+    (51) condition -> . condition_clause
+    (52) condition -> . condition OR condition_clause
+    (53) condition -> . condition AND condition_clause
+    (54) condition_clause -> . IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
+    (55) condition_clause -> . IDENTIFIER OPERATOR value
+    IDENTIFIER      shift and go to state 80
+
+    condition                      shift and go to state 98
+    condition_clause               shift and go to state 59
+
+state 84
+
+    (23) insert_clause -> VALUES values_clause .
+    $end            reduce using rule 23 (insert_clause -> VALUES values_clause .)
+
+
+state 85
+
+    (25) values_clause -> ( . datas )
+    (26) values_clause -> ( . datas ) , values_clause
+    (27) datas -> . data
+    (28) datas -> . datas , data
+    (29) data -> . ' IDENTIFIER '
+    (30) data -> . NUMBER
+    '               shift and go to state 101
+    NUMBER          shift and go to state 102
+
+    datas                          shift and go to state 99
+    data                           shift and go to state 100
+
+state 86
+
+    (24) insert_clause -> SELECT select_data .
+    $end            reduce using rule 24 (insert_clause -> SELECT select_data .)
+
+
+state 87
+
+    (19) constraints -> constraint constraints .
+    ,               reduce using rule 19 (constraints -> constraint constraints .)
+    )               reduce using rule 19 (constraints -> constraint constraints .)
+
+
+state 88
+
+    (14) data_type -> DECIMAL ( NUMBER . , NUMBER )
+    ,               shift and go to state 103
+
+
+state 89
+
+    (15) data_type -> VARCHAR ( NUMBER . )
+    )               shift and go to state 104
+
+
+state 90
+
+    (44) subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( . select_data )
+    (31) select_data -> . subquery_select
+    (32) select_data -> . join_select
+    (33) select_data -> . ordered_select
+    (34) select_data -> . conditional_select
+    (35) select_data -> . simple_select
+    (36) select_data -> . select_all
+    (44) subquery_select -> . SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data )
+    (43) join_select -> . SELECT data_columns FROM table_with_alias join_clause
+    (40) ordered_select -> . SELECT data_columns FROM IDENTIFIER ORDER_BY order_columns
+    (39) conditional_select -> . SELECT data_columns FROM IDENTIFIER WHERE conditions
+    (38) simple_select -> . SELECT data_columns FROM IDENTIFIER
+    (37) select_all -> . SELECT * FROM IDENTIFIER
+    SELECT          shift and go to state 18
+
+    select_data                    shift and go to state 105
+    subquery_select                shift and go to state 8
+    join_select                    shift and go to state 9
+    ordered_select                 shift and go to state 10
+    conditional_select             shift and go to state 11
+    simple_select                  shift and go to state 12
+    select_all                     shift and go to state 13
+
+state 91
+
+    (54) condition_clause -> IDENTIFIER . IDENTIFIER . OPERATOR IDENTIFIER . IDENTIFIER
+    OPERATOR        shift and go to state 106
+
+
+state 92
+
+    (58) value -> IDENTIFIER .
+    OR              reduce using rule 58 (value -> IDENTIFIER .)
+    AND             reduce using rule 58 (value -> IDENTIFIER .)
+    IDENTIFIER      reduce using rule 58 (value -> IDENTIFIER .)
+    $end            reduce using rule 58 (value -> IDENTIFIER .)
+    )               reduce using rule 58 (value -> IDENTIFIER .)
+
+
+state 93
+
+    (55) condition_clause -> IDENTIFIER OPERATOR value .
+    OR              reduce using rule 55 (condition_clause -> IDENTIFIER OPERATOR value .)
+    AND             reduce using rule 55 (condition_clause -> IDENTIFIER OPERATOR value .)
+    IDENTIFIER      reduce using rule 55 (condition_clause -> IDENTIFIER OPERATOR value .)
+    $end            reduce using rule 55 (condition_clause -> IDENTIFIER OPERATOR value .)
+    )               reduce using rule 55 (condition_clause -> IDENTIFIER OPERATOR value .)
+
+
+state 94
+
+    (56) value -> ' . IDENTIFIER '
+    IDENTIFIER      shift and go to state 107
+
+
+state 95
+
+    (57) value -> NUMBER .
+    OR              reduce using rule 57 (value -> NUMBER .)
+    AND             reduce using rule 57 (value -> NUMBER .)
+    IDENTIFIER      reduce using rule 57 (value -> NUMBER .)
+    $end            reduce using rule 57 (value -> NUMBER .)
+    )               reduce using rule 57 (value -> NUMBER .)
+
+
+state 96
+
+    (52) condition -> condition OR condition_clause .
+    OR              reduce using rule 52 (condition -> condition OR condition_clause .)
+    AND             reduce using rule 52 (condition -> condition OR condition_clause .)
+    IDENTIFIER      reduce using rule 52 (condition -> condition OR condition_clause .)
+    $end            reduce using rule 52 (condition -> condition OR condition_clause .)
+    )               reduce using rule 52 (condition -> condition OR condition_clause .)
+
+
+state 97
+
+    (53) condition -> condition AND condition_clause .
+    OR              reduce using rule 53 (condition -> condition AND condition_clause .)
+    AND             reduce using rule 53 (condition -> condition AND condition_clause .)
+    IDENTIFIER      reduce using rule 53 (condition -> condition AND condition_clause .)
+    $end            reduce using rule 53 (condition -> condition AND condition_clause .)
+    )               reduce using rule 53 (condition -> condition AND condition_clause .)
+
+
+state 98
+
+    (59) join_clause -> JOIN table_with_alias ON condition .
+    (52) condition -> condition . OR condition_clause
+    (53) condition -> condition . AND condition_clause
+    $end            reduce using rule 59 (join_clause -> JOIN table_with_alias ON condition .)
+    )               reduce using rule 59 (join_clause -> JOIN table_with_alias ON condition .)
+    OR              shift and go to state 78
+    AND             shift and go to state 79
+
+
+state 99
+
+    (25) values_clause -> ( datas . )
+    (26) values_clause -> ( datas . ) , values_clause
+    (28) datas -> datas . , data
+    )               shift and go to state 108
+    ,               shift and go to state 109
+
+
+state 100
+
+    (27) datas -> data .
+    )               reduce using rule 27 (datas -> data .)
+    ,               reduce using rule 27 (datas -> data .)
+
+
+state 101
+
+    (29) data -> ' . IDENTIFIER '
+    IDENTIFIER      shift and go to state 110
+
+
+state 102
+
+    (30) data -> NUMBER .
+    )               reduce using rule 30 (data -> NUMBER .)
+    ,               reduce using rule 30 (data -> NUMBER .)
+
+
+state 103
+
+    (14) data_type -> DECIMAL ( NUMBER , . NUMBER )
+    NUMBER          shift and go to state 111
+
+
+state 104
+
+    (15) data_type -> VARCHAR ( NUMBER ) .
+    NOT_NULL        reduce using rule 15 (data_type -> VARCHAR ( NUMBER ) .)
+    PRIMARY_KEY     reduce using rule 15 (data_type -> VARCHAR ( NUMBER ) .)
+    ,               reduce using rule 15 (data_type -> VARCHAR ( NUMBER ) .)
+    )               reduce using rule 15 (data_type -> VARCHAR ( NUMBER ) .)
+
+
+state 105
+
+    (44) subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data . )
+    )               shift and go to state 112
+
+
+state 106
+
+    (54) condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR . IDENTIFIER . IDENTIFIER
+    IDENTIFIER      shift and go to state 113
+
+
+state 107
+
+    (56) value -> ' IDENTIFIER . '
+    '               shift and go to state 114
+
+
+state 108
+
+    (25) values_clause -> ( datas ) .
+    (26) values_clause -> ( datas ) . , values_clause
+    $end            reduce using rule 25 (values_clause -> ( datas ) .)
+    ,               shift and go to state 115
+
+
+state 109
+
+    (28) datas -> datas , . data
+    (29) data -> . ' IDENTIFIER '
+    (30) data -> . NUMBER
+    '               shift and go to state 101
+    NUMBER          shift and go to state 102
+
+    data                           shift and go to state 116
+
+state 110
+
+    (29) data -> ' IDENTIFIER . '
+    '               shift and go to state 117
+
+
+state 111
+
+    (14) data_type -> DECIMAL ( NUMBER , NUMBER . )
+    )               shift and go to state 118
+
+
+state 112
+
+    (44) subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data ) .
+    $end            reduce using rule 44 (subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data ) .)
+    )               reduce using rule 44 (subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data ) .)
+
+
+state 113
+
+    (54) condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . . IDENTIFIER
+    .               shift and go to state 119
+
+
+state 114
+
+    (56) value -> ' IDENTIFIER ' .
+    OR              reduce using rule 56 (value -> ' IDENTIFIER ' .)
+    AND             reduce using rule 56 (value -> ' IDENTIFIER ' .)
+    IDENTIFIER      reduce using rule 56 (value -> ' IDENTIFIER ' .)
+    $end            reduce using rule 56 (value -> ' IDENTIFIER ' .)
+    )               reduce using rule 56 (value -> ' IDENTIFIER ' .)
+
+
+state 115
+
+    (26) values_clause -> ( datas ) , . values_clause
+    (25) values_clause -> . ( datas )
+    (26) values_clause -> . ( datas ) , values_clause
+    (               shift and go to state 85
+
+    values_clause                  shift and go to state 120
+
+state 116
+
+    (28) datas -> datas , data .
+    )               reduce using rule 28 (datas -> datas , data .)
+    ,               reduce using rule 28 (datas -> datas , data .)
+
+
+state 117
+
+    (29) data -> ' IDENTIFIER ' .
+    )               reduce using rule 29 (data -> ' IDENTIFIER ' .)
+    ,               reduce using rule 29 (data -> ' IDENTIFIER ' .)
+
+
+state 118
+
+    (14) data_type -> DECIMAL ( NUMBER , NUMBER ) .
+    NOT_NULL        reduce using rule 14 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+    PRIMARY_KEY     reduce using rule 14 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+    ,               reduce using rule 14 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+    )               reduce using rule 14 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+
+
+state 119
+
+    (54) condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . . IDENTIFIER
+    IDENTIFIER      shift and go to state 121
+
+
+state 120
+
+    (26) values_clause -> ( datas ) , values_clause .
+    $end            reduce using rule 26 (values_clause -> ( datas ) , values_clause .)
+
+
+state 121
+
+    (54) condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER .
+    OR              reduce using rule 54 (condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER .)
+    AND             reduce using rule 54 (condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER .)
+    IDENTIFIER      reduce using rule 54 (condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER .)
+    $end            reduce using rule 54 (condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER .)
+    )               reduce using rule 54 (condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER .)
+
+
+Conflicts:
+
+reduce/reduce conflict in state 68 resolved using rule constraints -> constraint
+rejected rule (constraints -> <empty>) in state 68

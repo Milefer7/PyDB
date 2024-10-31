@@ -16,14 +16,14 @@ if __name__ == '__main__':
     #
     # user_input = 'SHOW DATABASES;'
 
-    user_input = """
-    CREATE TABLE employees (
-        id INT PRIMARY KEY NOT NULL,
-        name VARCHAR(100) NOT NULL,
-        salary DECIMAL(10, 2),
-        department VARCHAR(50)
-    );
-    """
+    # user_input = """
+    # CREATE TABLE employees (
+    #     id INT PRIMARY KEY NOT NULL,
+    #     name VARCHAR(100) NOT NULL,
+    #     salary DECIMAL(10, 2),
+    #     department VARCHAR(50)
+    # );
+    # """
 
     # user_input = """
     # SELECT name, age
@@ -33,10 +33,48 @@ if __name__ == '__main__':
     # ORDER BY age DESC;
     # """
 
+    # user_input = '''
+    # SELECT s.name, c.course_name
+    # FROM students s
+    # JOIN courses c ON s.course_id = c.id;
+    # '''
+
+    # user_input = '''
+    # INSERT INTO students (name, age, major) VALUES
+    # ('Bob', 22, 'Mathematics'),
+    # ('Charlie', 19, 'Physics');
+    # '''
+
+    # 最后检查？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？
+    # user_input = """
+    # INSERT INTO graduated_students (name, age, major)
+    # SELECT name, age, major FROM students WHERE graduated = true;
+    # """
+
+    # user_input = """
+    # SELECT * FROM students;
+    # """
+
+    # user_input = """
+    # SELECT name, age FROM students;
+    # """
+
+    user_input = '''
+        SELECT name, age
+        FROM students
+        WHERE graduated = true
+            AND age > 20
+            AND name = 'Ella'
+            AND NOT age = 25;
+    '''
+
     lexer = SqlLexer()
     parser = SqlParser(db)
     tokens = lexer.tokenize(user_input)
     # for tok in tokens:
-        # print(f"Token Type: {tok.type}, Token Value: {tok.value}")
+    #     print(f"Token Type: {tok.type}, Token Value: {tok.value}")
     parser_tree = parser.parse(tokens)
     print(json.dumps(parser_tree, indent=2))
+
+
+# <condition> <condition> <condition>
