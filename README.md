@@ -49,37 +49,3 @@ PyDBMS
 #### 4. **测试与优化**
 
 在实现完初步功能后，使用一些 SQL 语句进行测试，并逐步优化性能。你还可以尝试实现更多的高级功能，比如多用户并发控制（可以参考 MySQL 的锁机制）。
-
-## 完成SQL语句
-
-* 创建数据库
-  * `CREATE DATABASE IDENTIFIER;`
-    * `CREATE DATABASE test;`
-
-* 展示所有数据库
-  * `SHOW DATABASES;`
-* 使用某个数据库
-  * `USE IDENTIFIER`
-    * `USE test`
-
-
-
-
-
-# Create（增）：插入数据
-
-    # data_c1 = "INSERT INTO users (name, age, city) VALUES ('John', 25, 'New York');"
-    # # Read（查）：查询数据
-    # data_r1 = "SELECT name, age FROM users WHERE age > 30 AND city = 'New York';"
-    # # Update（改）：更新数据
-    # data_u1 = "UPDATE users SET age = 26 WHERE name = 'John';"
-    # # Delete（删）：删除数据
-    # data_d1 = "DELETE FROM users WHERE age < 20;"
-    #
-    # data_list = [data_create_database]
-    # # data_list = [data_create_database, data_d1, data_r1, data_u1, data_d1]
-    # lexer = SqlLexer()
-    # for data in data_list:
-    #     for tok in lexer.tokenize(data):
-    #         print('type=%r, value=%r' % (tok.type, tok.value))
-    #     print('----------------------------------------------')
