@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     # user_input = 'CREATE DATABASE test_db;'
     #
-    # user_input = 'SHOW DATABASES;'
+    user_input = 'SHOW DATABASES;'
     #
     # user_input = """
     # CREATE TABLE employees (
@@ -39,11 +39,11 @@ if __name__ == '__main__':
     # JOIN courses c ON s.course_id = c.id;
     # '''
 
-    user_input = '''
-    INSERT INTO students (name, age, major) VALUES
-    ('Bob', 22, 'Mathematics'),
-    ('Charlie', 19, 'Physics');
-    '''
+    # user_input = '''
+    # INSERT INTO students (name, age, major) VALUES
+    # ('Bob', 22, 'Mathematics'),
+    # ('Charlie', 19, 'Physics');
+    # '''
 
     # user_input = """
     # INSERT INTO graduated_students (name, age, major)
@@ -54,9 +54,9 @@ if __name__ == '__main__':
     # SELECT * FROM students;
     # """
 
-    # user_input = """
-    # SELECT name, age FROM students;
-    # """
+    user_input = """
+    SELECT name, age FROM students;
+    """
 
     # user_input = '''
     #     SELECT name, age
@@ -71,11 +71,11 @@ if __name__ == '__main__':
     # SELECT name, age FROM students ORDER BY age DESC;
     #  '''
 
-    user_input = '''
-    SELECT s.name, c.course_name
-    FROM students s
-    JOIN courses c ON s.course_id = c.id;
-    '''
+    # user_input = '''
+    # SELECT s.name, c.course_name
+    # FROM students s
+    # JOIN courses c ON s.course_id = c.id;
+    # '''
 
     # user_input = '''
     # SELECT name, age FROM students
