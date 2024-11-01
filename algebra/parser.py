@@ -79,6 +79,7 @@ class SqlParser(Parser):
 
     def __init__(self, db):
         self.db = db
+        self.state = None
 
     # 顶层规则
     @_('create_database')
@@ -239,41 +240,14 @@ class SqlParser(Parser):
             "select_info": p.select_all,
         }
 
-    @_('simple_select')
+    @_('simple_select', 'conditional_select', 'ordered_select', 'join_select', 'subquery_select')
     def select_data(self, p):
         return {
             "type": "select_data",
-            "select_info": p.simple_select,
+            "select_info": p[0],
         }
 
-    @_('conditional_select')
-    def select_data(self, p):
-        return {
-            "type": "select_data",
-            "select_info": p.conditional_select,
-        }
-
-    @_('ordered_select')
-    def select_data(self, p):
-        return {
-            "type": "select_data",
-            "select_info": p.ordered_select,
-        }
-
-    @_('join_select')
-    def select_data(self, p):
-        return {
-            "type": "select_data",
-            "select_info": p.join_select,
-        }
-
-    @_('subquery_select')
-    def select_data(self, p):
-        return {
-            "type": "select_data",
-            "select_info": p.subquery_select,
-        }
-
+    # select_all 解析
     @_('SELECT "*" FROM IDENTIFIER')
     def select_all(self, p):
         return {
@@ -282,6 +256,7 @@ class SqlParser(Parser):
             "columns": ["*"]
         }
 
+    # simple_select 解析
     @_('SELECT data_columns FROM IDENTIFIER')
     def simple_select(self, p):
         return {
@@ -290,6 +265,7 @@ class SqlParser(Parser):
             "columns": p.data_columns
         }
 
+    # conditional_select 解析
     @_('SELECT data_columns FROM IDENTIFIER WHERE conditions')
     def conditional_select(self, p):
         return {
@@ -299,97 +275,80 @@ class SqlParser(Parser):
             "conditions": p.conditions
         }
 
+    # ordered_select 解析
     @_('SELECT data_columns FROM IDENTIFIER ORDER_BY order_columns')
     def ordered_select(self, p):
         return {
-            "table_name": p.IDENTIFIER,
             "select_type": "ordered_select",
+            "table_name": p.IDENTIFIER,
             "columns": p.data_columns,
-            "order_by": p.order_columns,
+            "order_by": p.order_columns
         }
 
+    # order_columns 解析
     @_('IDENTIFIER ASC')
     def order_columns(self, p):
-        return {
-            "column": p.IDENTIFIER,
-            "direction": "ASC"
-        }
+        return {"column": p.IDENTIFIER, "direction": "ASC"}
 
     @_('IDENTIFIER DESC')
     def order_columns(self, p):
-        return {
-            "column": p.IDENTIFIER,
-            "direction": "DESC"
-        }
+        return {"column": p.IDENTIFIER, "direction": "DESC"}
 
+    # join_select 解析
     @_('SELECT data_columns FROM table_with_alias join_clause')
     def join_select(self, p):
         return {
-            "table_name": p.table_with_alias,
             "select_type": "join_select",
+            "table_name": p.table_with_alias,
             "columns": p.data_columns,
             "join": p.join_clause,
         }
 
+    # subquery_select 解析
     @_('SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN "(" select_data ")"')
     def subquery_select(self, p):
         return {
-            "table_name": p[3],
             "select_type": "subquery_select",
+            "table_name": p.IDENTIFIER,
             "columns": p.data_columns,
             "conditions": {
-                "column": p[5],
-                "operator": 'IN',
-                "subquery": {
-                    p.select_data
-                }
+                "column": p.IDENTIFIER,
+                "operator": "IN",
+                "subquery": p.select_data
             }
         }
 
-    @_('data data_columns')
+    # data_columns 解析
+    @_('data "," data_columns')
     def data_columns(self, p):
         return [p.data] + p.data_columns
 
-    @_('')
+    @_('data')
     def data_columns(self, p):
-        return []
+        return [p.data]
 
-    # @_('IDENTIFIER ","')
-    # def data_column(self, p):
-    #     return p.IDENTIFIER
-    #
-    # @_('IDENTIFIER')
-    # def data_column(self, p):
-    #     return p.IDENTIFIER
-
+    # conditions 解析
     @_('condition conditions')
     def conditions(self, p):
-        # return [p.condition] + p.conditions
-        return (p.condition, p.conditions)
+        return [p.condition] + p.conditions
 
-    @_('')
+    @_('')  # 用于空条件
     def conditions(self, p):
         return []
 
-    @_('condition AND condition_clause')
-    @_('condition OR condition_clause')
+    # condition 解析
+    @_('condition AND condition_clause', 'condition OR condition_clause')
     def condition(self, p):
-        # "relation": p[1],  # p[1] 是 AND 或 OR
-        # "content": [p.condition] + [p.condition_clause]
-        return (p[1], p.condition, p.condition_clause)
+        return p[1], p.condition, p.condition_clause
 
     @_('condition_clause')
     def condition(self, p):
-        # return [p.condition_clause]
         return p.condition_clause
 
+    # condition_clause 解析
     @_('IDENTIFIER OPERATOR data')
     def condition_clause(self, p):
-        return {
-            "column": p.IDENTIFIER,
-            "operator": p.OPERATOR,
-            "data": p.data
-        }
+        return {"column": p.IDENTIFIER, "operator": p.OPERATOR, "data": p.data}
 
     @_('IDENTIFIER "." IDENTIFIER OPERATOR IDENTIFIER "." IDENTIFIER')
     def condition_clause(self, p):
@@ -399,27 +358,44 @@ class SqlParser(Parser):
             "data": f"{p[4]}.{p[6]}"
         }
 
-    @_('IDENTIFIER ","')
-    def data(self, p):
-        return p[0]
-
-    @_('NUMBER')
+    # data 解析
     @_('IDENTIFIER')
     def data(self, p):
-        return p[0]
+        return p.IDENTIFIER
+
+    @_('NUMBER')
+    def data(self, p):
+        return p.NUMBER
 
     @_('"\'" IDENTIFIER "\'"')
     def data(self, p):
         return p.IDENTIFIER
 
+    # join_clause 解析
     @_('JOIN table_with_alias ON condition')
     def join_clause(self, p):
-        return {
-            "table_with_alias": p.table_with_alias,
-            "on": p.condition
-        }
+        return {"table_with_alias": p.table_with_alias, "on": p.condition}
 
+    # table_with_alias 解析
     @_('IDENTIFIER IDENTIFIER')
     def table_with_alias(self, p):
-        return p.IDENTIFIER + p.IDENTIFIER
+        return {"table_name": p[0], "alias": p[1]}
 
+    # table_identifier 解析
+    @_('IDENTIFIER')
+    def table_identifier(self, p):
+        return p.IDENTIFIER
+
+    # alias_identifier 解析
+    @_('IDENTIFIER')
+    def alias_identifier(self, p):
+        return p.IDENTIFIER
+
+    # column_identifier 解析
+    @_('IDENTIFIER "." IDENTIFIER')
+    def column_identifier(self, p):
+        return f"{p[0]}.{p[2]}"
+
+    @_('IDENTIFIER')
+    def column_identifier(self, p):
+        return p.IDENTIFIER

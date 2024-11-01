@@ -43,8 +43,8 @@ Rule 39    order_columns -> IDENTIFIER DESC
 Rule 40    order_columns -> IDENTIFIER ASC
 Rule 41    join_select -> SELECT data_columns FROM table_with_alias join_clause
 Rule 42    subquery_select -> SELECT data_columns FROM IDENTIFIER WHERE IDENTIFIER IN ( select_data )
-Rule 43    data_columns -> <empty>
-Rule 44    data_columns -> data data_columns
+Rule 43    data_columns -> data
+Rule 44    data_columns -> data , data_columns
 Rule 45    conditions -> <empty>
 Rule 46    conditions -> condition conditions
 Rule 47    condition -> condition_clause
@@ -53,11 +53,14 @@ Rule 49    condition -> condition AND condition_clause  [precedence=left, level=
 Rule 50    condition_clause -> IDENTIFIER . IDENTIFIER OPERATOR IDENTIFIER . IDENTIFIER
 Rule 51    condition_clause -> IDENTIFIER OPERATOR data
 Rule 52    data -> ' IDENTIFIER '
-Rule 53    data -> IDENTIFIER
-Rule 54    data -> NUMBER
-Rule 55    data -> IDENTIFIER ,
-Rule 56    join_clause -> JOIN table_with_alias ON condition
-Rule 57    table_with_alias -> IDENTIFIER IDENTIFIER
+Rule 53    data -> NUMBER
+Rule 54    data -> IDENTIFIER
+Rule 55    join_clause -> JOIN table_with_alias ON condition
+Rule 56    table_with_alias -> IDENTIFIER IDENTIFIER
+Rule 57    table_identifier -> IDENTIFIER
+Rule 58    alias_identifier -> IDENTIFIER
+Rule 59    column_identifier -> IDENTIFIER
+Rule 60    column_identifier -> IDENTIFIER . IDENTIFIER
 
 Unused terminals:
 
@@ -72,8 +75,8 @@ Terminals, with rules where they appear:
 (                    : 10 14 15 22 25 26 42
 )                    : 10 14 15 22 25 26 42
 *                    : 35
-,                    : 12 14 26 28 55
-.                    : 50 50
+,                    : 12 14 26 28 44
+.                    : 50 50 60
 AND                  : 49
 ASC                  : 40
 CREATE               : 9 10
@@ -84,16 +87,16 @@ DESC                 : 39
 DOUBLE               : 
 FLOAT                : 
 FROM                 : 35 36 37 38 41 42
-IDENTIFIER           : 7 9 10 13 22 35 36 37 38 39 40 42 42 50 50 50 50 51 52 53 55 57 57
+IDENTIFIER           : 7 9 10 13 22 35 36 37 38 39 40 42 42 50 50 50 50 51 52 54 56 56 57 58 59 60 60
 IN                   : 42
 INSERT               : 22
 INT                  : 16
 INTO                 : 22
-JOIN                 : 56
+JOIN                 : 55
 LIMIT                : 
 NOT_NULL             : 20
-NUMBER               : 14 14 15 54
-ON                   : 56
+NUMBER               : 14 14 15 53
+ON                   : 55
 OPERATOR             : 50 51
 OR                   : 48
 ORDER_BY             : 38
@@ -110,7 +113,9 @@ error                :
 
 Nonterminals, with rules where they appear:
 
-condition            : 46 48 49 56
+alias_identifier     : 
+column_identifier    : 
+condition            : 46 48 49 55
 condition_clause     : 47 48 49
 conditional_select   : 32
 conditions           : 37 46
@@ -120,7 +125,7 @@ create_column        : 11 12
 create_columns       : 10 12
 create_database      : 6
 create_table         : 5
-data                 : 27 28 44 51
+data                 : 27 28 43 44 51
 data_columns         : 22 36 37 38 41 42 44
 data_type            : 13
 datas                : 25 26 28
@@ -136,7 +141,8 @@ show_databases       : 4
 simple_select        : 33
 statement            : 0
 subquery_select      : 29
-table_with_alias     : 41 56
+table_identifier     : 
+table_with_alias     : 41 55
 use_database         : 3
 values_clause        : 23 26
 
@@ -304,17 +310,15 @@ state 18
     (37) conditional_select -> SELECT . data_columns FROM IDENTIFIER WHERE conditions
     (36) simple_select -> SELECT . data_columns FROM IDENTIFIER
     (35) select_all -> SELECT . * FROM IDENTIFIER
-    (43) data_columns -> .
-    (44) data_columns -> . data data_columns
+    (43) data_columns -> . data
+    (44) data_columns -> . data , data_columns
     (52) data -> . ' IDENTIFIER '
-    (53) data -> . IDENTIFIER
-    (54) data -> . NUMBER
-    (55) data -> . IDENTIFIER ,
+    (53) data -> . NUMBER
+    (54) data -> . IDENTIFIER
     *               shift and go to state 26
-    FROM            reduce using rule 43 (data_columns -> .)
     '               shift and go to state 28
-    IDENTIFIER      shift and go to state 25
     NUMBER          shift and go to state 29
+    IDENTIFIER      shift and go to state 25
 
     data_columns                   shift and go to state 24
     data                           shift and go to state 27
@@ -361,74 +365,59 @@ state 24
 
 state 25
 
-    (53) data -> IDENTIFIER .
-    (55) data -> IDENTIFIER . ,
-  ! shift/reduce conflict for , resolved as shift
-    '               reduce using rule 53 (data -> IDENTIFIER .)
-    IDENTIFIER      reduce using rule 53 (data -> IDENTIFIER .)
-    NUMBER          reduce using rule 53 (data -> IDENTIFIER .)
-    FROM            reduce using rule 53 (data -> IDENTIFIER .)
-    )               reduce using rule 53 (data -> IDENTIFIER .)
-    OR              reduce using rule 53 (data -> IDENTIFIER .)
-    AND             reduce using rule 53 (data -> IDENTIFIER .)
-    $end            reduce using rule 53 (data -> IDENTIFIER .)
-    ,               shift and go to state 34
+    (54) data -> IDENTIFIER .
+    ,               reduce using rule 54 (data -> IDENTIFIER .)
+    FROM            reduce using rule 54 (data -> IDENTIFIER .)
+    )               reduce using rule 54 (data -> IDENTIFIER .)
+    OR              reduce using rule 54 (data -> IDENTIFIER .)
+    AND             reduce using rule 54 (data -> IDENTIFIER .)
+    IDENTIFIER      reduce using rule 54 (data -> IDENTIFIER .)
+    $end            reduce using rule 54 (data -> IDENTIFIER .)
 
 
 state 26
 
     (35) select_all -> SELECT * . FROM IDENTIFIER
-    FROM            shift and go to state 35
+    FROM            shift and go to state 34
 
 
 state 27
 
-    (44) data_columns -> data . data_columns
-    (43) data_columns -> .
-    (44) data_columns -> . data data_columns
-    (52) data -> . ' IDENTIFIER '
-    (53) data -> . IDENTIFIER
-    (54) data -> . NUMBER
-    (55) data -> . IDENTIFIER ,
-    FROM            reduce using rule 43 (data_columns -> .)
-    )               reduce using rule 43 (data_columns -> .)
-    '               shift and go to state 28
-    IDENTIFIER      shift and go to state 25
-    NUMBER          shift and go to state 29
+    (43) data_columns -> data .
+    (44) data_columns -> data . , data_columns
+    FROM            reduce using rule 43 (data_columns -> data .)
+    )               reduce using rule 43 (data_columns -> data .)
+    ,               shift and go to state 35
 
-    data                           shift and go to state 27
-    data_columns                   shift and go to state 36
 
 state 28
 
     (52) data -> ' . IDENTIFIER '
-    IDENTIFIER      shift and go to state 37
+    IDENTIFIER      shift and go to state 36
 
 
 state 29
 
-    (54) data -> NUMBER .
-    '               reduce using rule 54 (data -> NUMBER .)
-    IDENTIFIER      reduce using rule 54 (data -> NUMBER .)
-    NUMBER          reduce using rule 54 (data -> NUMBER .)
-    FROM            reduce using rule 54 (data -> NUMBER .)
-    )               reduce using rule 54 (data -> NUMBER .)
-    OR              reduce using rule 54 (data -> NUMBER .)
-    AND             reduce using rule 54 (data -> NUMBER .)
-    $end            reduce using rule 54 (data -> NUMBER .)
-    ,               reduce using rule 54 (data -> NUMBER .)
+    (53) data -> NUMBER .
+    ,               reduce using rule 53 (data -> NUMBER .)
+    FROM            reduce using rule 53 (data -> NUMBER .)
+    )               reduce using rule 53 (data -> NUMBER .)
+    OR              reduce using rule 53 (data -> NUMBER .)
+    AND             reduce using rule 53 (data -> NUMBER .)
+    IDENTIFIER      reduce using rule 53 (data -> NUMBER .)
+    $end            reduce using rule 53 (data -> NUMBER .)
 
 
 state 30
 
     (22) insert_data -> INSERT INTO IDENTIFIER . ( data_columns ) insert_clause
-    (               shift and go to state 38
+    (               shift and go to state 37
 
 
 state 31
 
     (10) create_table -> CREATE TABLE IDENTIFIER . ( create_columns )
-    (               shift and go to state 39
+    (               shift and go to state 38
 
 
 state 32
@@ -444,62 +433,54 @@ state 33
     (38) ordered_select -> SELECT data_columns FROM . IDENTIFIER ORDER_BY order_columns
     (37) conditional_select -> SELECT data_columns FROM . IDENTIFIER WHERE conditions
     (36) simple_select -> SELECT data_columns FROM . IDENTIFIER
-    (57) table_with_alias -> . IDENTIFIER IDENTIFIER
-    IDENTIFIER      shift and go to state 40
+    (56) table_with_alias -> . IDENTIFIER IDENTIFIER
+    IDENTIFIER      shift and go to state 39
 
-    table_with_alias               shift and go to state 41
+    table_with_alias               shift and go to state 40
 
 state 34
 
-    (55) data -> IDENTIFIER , .
-    '               reduce using rule 55 (data -> IDENTIFIER , .)
-    IDENTIFIER      reduce using rule 55 (data -> IDENTIFIER , .)
-    NUMBER          reduce using rule 55 (data -> IDENTIFIER , .)
-    FROM            reduce using rule 55 (data -> IDENTIFIER , .)
-    )               reduce using rule 55 (data -> IDENTIFIER , .)
-    OR              reduce using rule 55 (data -> IDENTIFIER , .)
-    AND             reduce using rule 55 (data -> IDENTIFIER , .)
-    $end            reduce using rule 55 (data -> IDENTIFIER , .)
-    ,               reduce using rule 55 (data -> IDENTIFIER , .)
+    (35) select_all -> SELECT * FROM . IDENTIFIER
+    IDENTIFIER      shift and go to state 41
 
 
 state 35
 
-    (35) select_all -> SELECT * FROM . IDENTIFIER
-    IDENTIFIER      shift and go to state 42
+    (44) data_columns -> data , . data_columns
+    (43) data_columns -> . data
+    (44) data_columns -> . data , data_columns
+    (52) data -> . ' IDENTIFIER '
+    (53) data -> . NUMBER
+    (54) data -> . IDENTIFIER
+    '               shift and go to state 28
+    NUMBER          shift and go to state 29
+    IDENTIFIER      shift and go to state 25
 
+    data                           shift and go to state 27
+    data_columns                   shift and go to state 42
 
 state 36
-
-    (44) data_columns -> data data_columns .
-    FROM            reduce using rule 44 (data_columns -> data data_columns .)
-    )               reduce using rule 44 (data_columns -> data data_columns .)
-
-
-state 37
 
     (52) data -> ' IDENTIFIER . '
     '               shift and go to state 43
 
 
-state 38
+state 37
 
     (22) insert_data -> INSERT INTO IDENTIFIER ( . data_columns ) insert_clause
-    (43) data_columns -> .
-    (44) data_columns -> . data data_columns
+    (43) data_columns -> . data
+    (44) data_columns -> . data , data_columns
     (52) data -> . ' IDENTIFIER '
-    (53) data -> . IDENTIFIER
-    (54) data -> . NUMBER
-    (55) data -> . IDENTIFIER ,
-    )               reduce using rule 43 (data_columns -> .)
+    (53) data -> . NUMBER
+    (54) data -> . IDENTIFIER
     '               shift and go to state 28
-    IDENTIFIER      shift and go to state 25
     NUMBER          shift and go to state 29
+    IDENTIFIER      shift and go to state 25
 
     data_columns                   shift and go to state 44
     data                           shift and go to state 27
 
-state 39
+state 38
 
     (10) create_table -> CREATE TABLE IDENTIFIER ( . create_columns )
     (11) create_columns -> . create_column
@@ -510,13 +491,13 @@ state 39
     create_columns                 shift and go to state 46
     create_column                  shift and go to state 47
 
-state 40
+state 39
 
     (42) subquery_select -> SELECT data_columns FROM IDENTIFIER . WHERE IDENTIFIER IN ( select_data )
     (38) ordered_select -> SELECT data_columns FROM IDENTIFIER . ORDER_BY order_columns
     (37) conditional_select -> SELECT data_columns FROM IDENTIFIER . WHERE conditions
     (36) simple_select -> SELECT data_columns FROM IDENTIFIER .
-    (57) table_with_alias -> IDENTIFIER . IDENTIFIER
+    (56) table_with_alias -> IDENTIFIER . IDENTIFIER
     WHERE           shift and go to state 49
     ORDER_BY        shift and go to state 50
     $end            reduce using rule 36 (simple_select -> SELECT data_columns FROM IDENTIFIER .)
@@ -524,33 +505,38 @@ state 40
     IDENTIFIER      shift and go to state 48
 
 
-state 41
+state 40
 
     (41) join_select -> SELECT data_columns FROM table_with_alias . join_clause
-    (56) join_clause -> . JOIN table_with_alias ON condition
+    (55) join_clause -> . JOIN table_with_alias ON condition
     JOIN            shift and go to state 52
 
     join_clause                    shift and go to state 51
 
-state 42
+state 41
 
     (35) select_all -> SELECT * FROM IDENTIFIER .
     $end            reduce using rule 35 (select_all -> SELECT * FROM IDENTIFIER .)
     )               reduce using rule 35 (select_all -> SELECT * FROM IDENTIFIER .)
 
 
+state 42
+
+    (44) data_columns -> data , data_columns .
+    FROM            reduce using rule 44 (data_columns -> data , data_columns .)
+    )               reduce using rule 44 (data_columns -> data , data_columns .)
+
+
 state 43
 
     (52) data -> ' IDENTIFIER ' .
-    '               reduce using rule 52 (data -> ' IDENTIFIER ' .)
-    IDENTIFIER      reduce using rule 52 (data -> ' IDENTIFIER ' .)
-    NUMBER          reduce using rule 52 (data -> ' IDENTIFIER ' .)
+    ,               reduce using rule 52 (data -> ' IDENTIFIER ' .)
     FROM            reduce using rule 52 (data -> ' IDENTIFIER ' .)
     )               reduce using rule 52 (data -> ' IDENTIFIER ' .)
     OR              reduce using rule 52 (data -> ' IDENTIFIER ' .)
     AND             reduce using rule 52 (data -> ' IDENTIFIER ' .)
+    IDENTIFIER      reduce using rule 52 (data -> ' IDENTIFIER ' .)
     $end            reduce using rule 52 (data -> ' IDENTIFIER ' .)
-    ,               reduce using rule 52 (data -> ' IDENTIFIER ' .)
 
 
 state 44
@@ -587,9 +573,9 @@ state 47
 
 state 48
 
-    (57) table_with_alias -> IDENTIFIER IDENTIFIER .
-    JOIN            reduce using rule 57 (table_with_alias -> IDENTIFIER IDENTIFIER .)
-    ON              reduce using rule 57 (table_with_alias -> IDENTIFIER IDENTIFIER .)
+    (56) table_with_alias -> IDENTIFIER IDENTIFIER .
+    JOIN            reduce using rule 56 (table_with_alias -> IDENTIFIER IDENTIFIER .)
+    ON              reduce using rule 56 (table_with_alias -> IDENTIFIER IDENTIFIER .)
 
 
 state 49
@@ -629,8 +615,8 @@ state 51
 
 state 52
 
-    (56) join_clause -> JOIN . table_with_alias ON condition
-    (57) table_with_alias -> . IDENTIFIER IDENTIFIER
+    (55) join_clause -> JOIN . table_with_alias ON condition
+    (56) table_with_alias -> . IDENTIFIER IDENTIFIER
     IDENTIFIER      shift and go to state 67
 
     table_with_alias               shift and go to state 66
@@ -765,13 +751,13 @@ state 65
 
 state 66
 
-    (56) join_clause -> JOIN table_with_alias . ON condition
+    (55) join_clause -> JOIN table_with_alias . ON condition
     ON              shift and go to state 87
 
 
 state 67
 
-    (57) table_with_alias -> IDENTIFIER . IDENTIFIER
+    (56) table_with_alias -> IDENTIFIER . IDENTIFIER
     IDENTIFIER      shift and go to state 48
 
 
@@ -893,12 +879,11 @@ state 80
 
     (51) condition_clause -> IDENTIFIER OPERATOR . data
     (52) data -> . ' IDENTIFIER '
-    (53) data -> . IDENTIFIER
-    (54) data -> . NUMBER
-    (55) data -> . IDENTIFIER ,
+    (53) data -> . NUMBER
+    (54) data -> . IDENTIFIER
     '               shift and go to state 28
-    IDENTIFIER      shift and go to state 25
     NUMBER          shift and go to state 29
+    IDENTIFIER      shift and go to state 25
 
     data                           shift and go to state 96
 
@@ -951,7 +936,7 @@ state 86
 
 state 87
 
-    (56) join_clause -> JOIN table_with_alias ON . condition
+    (55) join_clause -> JOIN table_with_alias ON . condition
     (47) condition -> . condition_clause
     (48) condition -> . condition OR condition_clause
     (49) condition -> . condition AND condition_clause
@@ -975,12 +960,11 @@ state 89
     (27) datas -> . data
     (28) datas -> . datas , data
     (52) data -> . ' IDENTIFIER '
-    (53) data -> . IDENTIFIER
-    (54) data -> . NUMBER
-    (55) data -> . IDENTIFIER ,
+    (53) data -> . NUMBER
+    (54) data -> . IDENTIFIER
     '               shift and go to state 28
-    IDENTIFIER      shift and go to state 25
     NUMBER          shift and go to state 29
+    IDENTIFIER      shift and go to state 25
 
     datas                          shift and go to state 100
     data                           shift and go to state 101
@@ -1073,11 +1057,11 @@ state 98
 
 state 99
 
-    (56) join_clause -> JOIN table_with_alias ON condition .
+    (55) join_clause -> JOIN table_with_alias ON condition .
     (48) condition -> condition . OR condition_clause
     (49) condition -> condition . AND condition_clause
-    $end            reduce using rule 56 (join_clause -> JOIN table_with_alias ON condition .)
-    )               reduce using rule 56 (join_clause -> JOIN table_with_alias ON condition .)
+    $end            reduce using rule 55 (join_clause -> JOIN table_with_alias ON condition .)
+    )               reduce using rule 55 (join_clause -> JOIN table_with_alias ON condition .)
     OR              shift and go to state 82
     AND             shift and go to state 83
 
@@ -1137,12 +1121,11 @@ state 107
 
     (28) datas -> datas , . data
     (52) data -> . ' IDENTIFIER '
-    (53) data -> . IDENTIFIER
-    (54) data -> . NUMBER
-    (55) data -> . IDENTIFIER ,
+    (53) data -> . NUMBER
+    (54) data -> . IDENTIFIER
     '               shift and go to state 28
-    IDENTIFIER      shift and go to state 25
     NUMBER          shift and go to state 29
+    IDENTIFIER      shift and go to state 25
 
     data                           shift and go to state 112
 
@@ -1214,6 +1197,5 @@ state 116
 
 Conflicts:
 
-shift/reduce conflict for , in state 25 resolved as shift
 reduce/reduce conflict in state 72 resolved using rule constraints -> constraint
 rejected rule (constraints -> <empty>) in state 72
