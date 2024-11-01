@@ -230,14 +230,6 @@ class SqlParser(Parser):
     def datas(self, p):
         return [p.data]
 
-    @_('NUMBER')
-    def data(self, p):
-        return p.NUMBER
-
-    @_('"\'" IDENTIFIER "\'"')
-    def data(self, p):
-        return p.IDENTIFIER
-
     # ****************************************************
     # select数据
     @_('select_all')
@@ -354,21 +346,21 @@ class SqlParser(Parser):
             }
         }
 
-    @_('data_column data_columns')
+    @_('data data_columns')
     def data_columns(self, p):
-        return [p.data_column] + p.data_columns
+        return [p.data] + p.data_columns
 
     @_('')
     def data_columns(self, p):
         return []
 
-    @_('IDENTIFIER ","')
-    def data_column(self, p):
-        return p.IDENTIFIER
-
-    @_('IDENTIFIER')
-    def data_column(self, p):
-        return p.IDENTIFIER
+    # @_('IDENTIFIER ","')
+    # def data_column(self, p):
+    #     return p.IDENTIFIER
+    #
+    # @_('IDENTIFIER')
+    # def data_column(self, p):
+    #     return p.IDENTIFIER
 
     @_('condition conditions')
     def conditions(self, p):
@@ -391,12 +383,12 @@ class SqlParser(Parser):
         # return [p.condition_clause]
         return p.condition_clause
 
-    @_('IDENTIFIER OPERATOR value')
+    @_('IDENTIFIER OPERATOR data')
     def condition_clause(self, p):
         return {
             "column": p.IDENTIFIER,
             "operator": p.OPERATOR,
-            "value": p.value
+            "data": p.data
         }
 
     @_('IDENTIFIER "." IDENTIFIER OPERATOR IDENTIFIER "." IDENTIFIER')
@@ -404,19 +396,20 @@ class SqlParser(Parser):
         return {
             "column": f"{p[0]}.{p[2]}",
             "operator": p.OPERATOR,
-            "value": f"{p[4]}.{p[6]}"
+            "data": f"{p[4]}.{p[6]}"
         }
 
-    @_('IDENTIFIER')
-    def value(self, p):
-        return p.IDENTIFIER
+    @_('IDENTIFIER ","')
+    def data(self, p):
+        return p[0]
 
     @_('NUMBER')
-    def value(self, p):
-        return p.NUMBER
+    @_('IDENTIFIER')
+    def data(self, p):
+        return p[0]
 
     @_('"\'" IDENTIFIER "\'"')
-    def value(self, p):
+    def data(self, p):
         return p.IDENTIFIER
 
     @_('JOIN table_with_alias ON condition')
@@ -430,6 +423,3 @@ class SqlParser(Parser):
     def table_with_alias(self, p):
         return p.IDENTIFIER + p.IDENTIFIER
 
-    @_('IDENTIFIER')
-    def table_with_alias(self, p):
-        return p.IDENTIFIER

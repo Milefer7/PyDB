@@ -1,8 +1,7 @@
-from server.server import sql_server
-from algebra.executor import DatabaseManager
+import json
+
 from algebra.executor import *
 from algebra.parser import *
-import json
 
 # if __name__ == '__main__':
 #     sql_server()
@@ -11,9 +10,9 @@ if __name__ == '__main__':
     db = DatabaseManager()
 
     # user_input = 'USE test;'
-    #
+
     # user_input = 'CREATE DATABASE test_db '
-    #
+
     # user_input = 'SHOW DATABASES;'
 
     # user_input = """
@@ -59,15 +58,29 @@ if __name__ == '__main__':
     # SELECT name, age FROM students;
     # """
 
-    user_input = '''
-        SELECT name, age
-        FROM students
-        WHERE graduated = true
-            AND age > 20
-            AND name = 'Ella'
-            AND NOT age = 25;
-    '''
+    # user_input = '''
+    #     SELECT name, age
+    #     FROM students
+    #     WHERE graduated = true
+    #         AND age > 20
+    #         AND name = 'Ella'
+    #         AND NOT age = 25;
+    # '''
 
+    # user_input = '''
+    # SELECT name, age FROM students ORDER BY age DESC;
+    #  '''
+
+    # user_input = '''
+    # SELECT s.name, c.course_name
+    # FROM students s
+    # JOIN courses c ON s.course_id = c.id;\
+    # '''
+
+    # user_input = '''
+    # SELECT name, age FROM students
+    # WHERE major IN (SELECT major FROM majors WHERE department = 'Science');
+    # '''
     lexer = SqlLexer()
     parser = SqlParser(db)
     tokens = lexer.tokenize(user_input)
@@ -75,6 +88,3 @@ if __name__ == '__main__':
     #     print(f"Token Type: {tok.type}, Token Value: {tok.value}")
     parser_tree = parser.parse(tokens)
     print(json.dumps(parser_tree, indent=2))
-
-
-# <condition> <condition> <condition>
