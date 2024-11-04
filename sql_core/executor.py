@@ -11,7 +11,7 @@ class DatabaseManager:
         self.log_path = None
 
     @staticmethod
-    def show_database():
+    def dbm_show_database():
         try:
             root_dir = 'database'
             if not os.path.exists(root_dir):
@@ -30,7 +30,8 @@ class DatabaseManager:
             print(f"An error occurred: {e}")
 
     @staticmethod
-    def create_database(database_name):
+    def dbm_create_database(sql_tree):
+        database_name = sql_tree.get("database_name")
         try:
             # 如果根目录下database文件夹不存在，创建一个
             root_dir = 'database'
@@ -49,7 +50,7 @@ class DatabaseManager:
         except Exception as e:
             print(f"An error occurred while creating the database: {e}")
 
-    def select_database(self, database_name):
+    def dbm_select_database(self, database_name):
         self.database_name = database_name
         self.database_path = os.path.join(self.root_dir, database_name)
         self.log_path = os.path.join(self.database_path, 'log.txt')
@@ -58,22 +59,18 @@ class DatabaseManager:
         print(f"Database Path: {self.database_path}")
         print(f"Log Path: {self.log_path}")
 
+    def dbm_use_database(self, sql_tree):
+        self.database_name = sql_tree.get("database_name")
+        self.database_path = os.path.join(self.root_dir, self.database_name)
+        self.log_path = os.path.join(self.database_path, 'log.txt')
 
-# def create_database(database_name):
-#     try:
-#         # 如果根目录下database文件夹不存在，创建一个
-#         root_dir = 'database'
-#         if not os.path.exists(root_dir):
-#             os.makedirs(root_dir)
-#             print(f"Created root directory: {root_dir}")
-#
-#         database_path = os.path.join(root_dir, database_name)
-#         if not os.path.exists(database_path):
-#             os.makedirs(database_path)
-#             print(f"Database '{database_name}' created at: {database_path}")
-#             # 初始化日志
-#             log.init_log(database_path)
-#         else:
-#             print(f"Database '{database_name}' already exists")
-#     except Exception as e:
-#         print(f"An error occurred while creating the database: {e}")
+        # print(f"Database Name: {self.database_name}")
+        # print(f"Database Path: {self.database_path}")
+        # print(f"Log Path: {self.log_path}")
+
+        print("Database changed")
+
+    def dbm_create_table(self, sql_tree):
+
+
+

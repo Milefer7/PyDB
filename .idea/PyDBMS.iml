@@ -10,8 +10,8 @@
   <component name="PyNamespacePackagesService">
     <option name="namespacePackageFolders">
       <list>
-        <option value="$MODULE_DIR$/algebra" />
-        <option value="$MODULE_DIR$/server" />
+        <option value="$MODULE_DIR$/sql_core" />
+        <option value="$MODULE_DIR$/client" />
       </list>
     </option>
   </component>
