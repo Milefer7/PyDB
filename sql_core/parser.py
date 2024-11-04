@@ -74,7 +74,7 @@ class SqlParser(Parser):
         ('left', OR),
         ('left', AND),
     )
-    # debugfile = 'parser.out'
+    debugfile = 'parser.out'
 
     def __init__(self, db):
         self.db = db

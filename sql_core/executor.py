@@ -1,5 +1,5 @@
 import os
-
+import pandas as pd
 from transaction import log
 
 
@@ -71,6 +71,22 @@ class DatabaseManager:
         print("Database changed")
 
     def dbm_create_table(self, sql_tree):
+        table_name = sql_tree.get("table_name")
+        columns = sql_tree.get("columns")
+        data = []
+        for column in columns:
+            name = column.get("name")
+            # data_type = column.get("data_type")
+            # constraints = column.get("constraints")
+            data.append(name)
+        print(data)
+
+        df = pd.DataFrame(data)
+        print(self.database_path + table_name)
+        file_path = os.path.join(self.database_path, table_name)
+        # 将数据存储为 CSV 文件
+        df.to_csv(f"{file_path}.csv", index=False)
+
 
 
 
