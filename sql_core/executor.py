@@ -73,20 +73,34 @@ class DatabaseManager:
     def dbm_create_table(self, sql_tree):
         table_name = sql_tree.get("table_name")
         columns = sql_tree.get("columns")
-        data = []
+        schema = []
+
         for column in columns:
             name = column.get("name")
-            # data_type = column.get("data_type")
-            # constraints = column.get("constraints")
-            data.append(name)
-        print(data)
+            data_type = column.get("data_type")
+            constraints = column.get("constraints", [])
 
-        df = pd.DataFrame(data)
-        print(self.database_path + table_name)
-        file_path = os.path.join(self.database_path, table_name)
+            # 检查是否有主键和非空约束
+            is_primary_key = 'primary key' in constraints
+            is_not_null = 'not null' in constraints
+
+            # 添加每列的信息到结构数据中
+            schema.append({
+                "name": name,
+                "data_type": data_type,
+                "is_primary_key": is_primary_key,
+                "is_not_null": is_not_null
+            })
+
+        # 表约束条件
+        schema_df = pd.DataFrame(schema)
+        schema_table_name = f"{self.database_name}_schema"
+
+        schema_file_path = os.path.join(self.database_path, schema_table_name)
         # 将数据存储为 CSV 文件
-        df.to_csv(f"{file_path}.csv", index=False)
+        schema_df.to_csv(f"{schema_file_path}.csv", index=False)
 
-
-
-
+        # 表数据
+        data_df = pd.DataFrame(columns=[col['name'] for col in schema])
+        data_file_path = os.path.join(self.database_path, self.database_name)
+        data_df.to_csv(f"{data_file_path}.csv", index=False)
