@@ -138,24 +138,32 @@ class SqlParser(Parser):
         }
 
     # 创建表
-    @_('CREATE TABLE IDENTIFIER "(" create_columns ")"')
+    @_('CREATE TABLE IDENTIFIER "(" columns ")"')
     def create_table(self, p):
         return {
             "type": "create_table",
             "table_name": p.IDENTIFIER,
-            "columns": p.create_columns
+            "columns": p.columns
         }
 
-    @_('create_column "," create_columns')
-    def create_columns(self, p):
-        return [p.create_column] + p.create_columns
+    @_('column column_list')
+    def columns(self, p):
+        return [p.column] + p.column_list  # 收集所有列
 
-    @_('create_column')
-    def create_columns(self, p):
-        return [p.create_column]
+    @_('"," column column_list')
+    def column_list(self, p):
+        return [p.column] + p.column_list  # 收集多个列
+
+    @_('"," column')
+    def column_list(self, p):
+        return [p.column]  # 处理最后一个列
+
+    @_('')
+    def column_list(self, p):
+        return []  # 处理最后一个列
 
     @_('IDENTIFIER data_type constraints')
-    def create_column(self, p):
+    def column(self, p):
         return {
             "name": p.IDENTIFIER,
             "data_type": p.data_type,
@@ -194,6 +202,10 @@ class SqlParser(Parser):
     @_('constraint')
     def constraints(self, p):
         return [p.constraint]  # 单个约束
+
+    @_('')  # 空处理
+    def constraints(self, p):
+        return []  # 返回空约束列表
 
     @_('PRIMARY_KEY')
     def constraint(self, p):
