@@ -124,13 +124,22 @@ class DatabaseManager:
             # column_order = [col["name"] for col in schema["name"]]
             # primary_key = next((col["name"] for col in schema["columns"] if col.get("primary_key")), None)
             # nullable_columns = {col["name"]: col["nullable"] for col in schema["columns"]}
-            #
-            # print(column_order)
-            # print(primary_key)
-            # print(nullable_columns)
+
+            # 对数据的处理
+            columns = sql_tree["columns"]
+            values = sql_tree["insert_clause"]["values"]
+            new_data = pd.DataFrame(values, columns=columns)
+            row_count = len(new_data)
+
+            # data_file_path 是 CSV 数据文件的路径
+            data_file_path = os.path.join(self.database_path, f"{table_name}.csv")
+
+            # 将 new_data 追加到现有的 CSV 文件中
+            new_data.to_csv(data_file_path, mode='a', header=False, index=False)
+
+            print(f"Query OK, {row_count} row affected", end='')
         except Exception as e:
             print(f"An error occurred: {e}", end='')
-
 
 # if __name__ == '__main__':
 #     # tree = """
