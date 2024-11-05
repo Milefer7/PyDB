@@ -383,6 +383,11 @@ class SqlParser(Parser):
     @_('qualified_data')
     def alias_column(self, p):
         return p.qualified_data
+
+    @_('"\'" IDENTIFIER IDENTIFIER "\'"')
+    def data(self, p):
+        return f"{p.IDENTIFIER0} {p.IDENTIFIER1}"
+
     # 解析 data
     @_('"\'" IDENTIFIER "\'"')
     def data(self, p):
@@ -394,7 +399,7 @@ class SqlParser(Parser):
 
     @_('NUMBER')
     def data(self, p):
-        return int(p.NUMBER)
+        return (p.NUMBER)
 
     @_('data "." data')
     def qualified_data(self, p):

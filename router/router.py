@@ -1,9 +1,10 @@
 import json
 from sql_core.executor import *
+from utils.util import *
 
 
 def router(sql_tree, db):
-    print(json.dumps(sql_tree, indent=2))
+    # print(json.dumps(sql_tree, indent=2))
     sql_type = sql_tree.get("type")
     # print(sql_type)
 
@@ -21,6 +22,11 @@ def router(sql_tree, db):
             else:
                 db.dbm_create_table(sql_tree)
         case "insert_data":
-            pass
+            if db.database_name is None:
+                print("error: No database selected")
+            elif find_table(sql_tree.get("table_name"), db.database_path):
+                print("error: Table isn't created")
+            else:
+                db.dbm_insert_data(sql_tree)
         case "select_data":
             pass

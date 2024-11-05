@@ -1,3 +1,6 @@
+import time
+
+
 def user_input():
     info_input = ''
     while True:
@@ -13,3 +16,21 @@ def user_input():
         if ';' in info_input:
             return info_input.strip()
 
+
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        # 回到上一行并输出内容到上一行的结尾
+        print(f" ({end_time - start_time:.4f} sec)")  # 在上一行结尾处输出
+        return result
+
+    return wrapper
+
+
+def find_table(table_name, path_to_find):
+    for root, dirs, files in os.walk(path_to_find):
+        if f"{table_name}.csv" in files:
+            return True
+    return False

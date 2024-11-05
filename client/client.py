@@ -16,7 +16,7 @@ def sql_client():
     # 监听控制台
     while True:
         user_input = utils.util.user_input()
-        print(user_input)
+        # print(user_input)
         if user_input is None:
             # 如果user_input返回None，退出整个服务器循环
             break
