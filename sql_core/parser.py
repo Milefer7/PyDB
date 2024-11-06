@@ -8,7 +8,7 @@ class SqlLexer(Lexer):
 
     tokens = {
         # 主关键词
-        CREATE, SELECT, SHOW, USE, INSERT,
+        CREATE, SELECT, SHOW, USE, INSERT, DELETE,
         # 关键词
         IDENTIFIER, DATABASES, DATABASE, ORDER_BY, WHERE, PRIMARY_KEY, NOT_NULL, NUMBER, OPERATOR, INTO, VALUES,
         JOIN, IN, ON,
@@ -33,6 +33,7 @@ class SqlLexer(Lexer):
     IDENTIFIER['SELECT'] = SELECT
     IDENTIFIER['INSERT'] = INSERT
     IDENTIFIER['DATABASE'] = DATABASE
+    IDENTIFIER['DELETE'] = DELETE
     IDENTIFIER['VALUES'] = VALUES
     IDENTIFIER['WHERE'] = WHERE
     IDENTIFIER['FLOAT'] = FLOAT
@@ -111,7 +112,21 @@ class SqlParser(Parser):
     def statement(self, p):
         return p.select_data
 
+    @_('delete_data')
+    def statement(self, p):
+        return p.delete_data
+
     # ****************************************************
+    # 删除数据
+    @_('DELETE FROM IDENTIFIER ')
+    def delete_data(self, p):
+        return {
+            "type": "delete_data",
+            "delete_clause": {
+                "delete_type": "all_delete",
+                "table_name": p.IDENTIFIER
+            }
+        }
     # 使用数据库
     @_('USE IDENTIFIER')
     def use_database(self, p):
