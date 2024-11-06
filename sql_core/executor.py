@@ -151,39 +151,11 @@ class DatabaseManager:
         data = data[columns]
         print(tabulate(data, headers='keys', tablefmt='grid'))
 
-# if __name__ == '__main__':
-#     # tree = """
-#     # {
-#     #     "type": "insert_data",
-#     #     "table_name": "students",
-#     #     "columns": [
-#     #         "name",
-#     #         "age",
-#     #         "major"
-#     #     ],
-#     #     "insert_clause": {
-#     #         "insert_type": "values",
-#     #         "values": [
-#     #             [
-#     #                 "Bob",
-#     #                 "22",
-#     #                 "Mathematics"
-#     #             ],
-#     #             [
-#     #                 "Charlie",
-#     #                 "19",
-#     #                 "Physics"
-#     #             ]
-#     #         ]
-#     #     }
-#     # }
-#     # """
-#     tree = '''
-#     CREATE TABLE employees (id INT PRIMARY KEY NOT NULL, name VARCHAR(100) NOT NULL,salary DECIMAL(10, 2),department VARCHAR(50));
-#     '''
-#
-#     db = DatabaseManager()
-#     db.database_name = 'geek'
-#     db.database_path = 'database\geek'
-#     db.dbm_create_table(json.loads(tree))
-#     # db.dbm_insert_data(json.loads(tree))
+    @timeit
+    def dbm_delete_data(self, sql_tree):
+        table_name = sql_tree.get("delete_clause").get("table_name")
+        data_file_path = os.path.join(self.database_path, f"{table_name}.csv")
+        scheme_file_path = os.path.join(self.database_path, f"{table_name}_schema.csv")
+        os.remove(data_file_path)
+        os.remove(scheme_file_path)
+        print("Table deleted successfully", end='')

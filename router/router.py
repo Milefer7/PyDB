@@ -40,3 +40,10 @@ def router(sql_tree, db):
                         db.dbm_select_all_data(sql_tree)
                     case "simple_select":
                         db.dbm_simple_select_data(sql_tree)
+        case "delete_data":
+            if db.database_name is None:
+                print("error: No database selected")
+            elif not find_table(sql_tree.get("delete_clause").get("table_name"), db.database_path):
+                print("error: Table doesn't exist")
+            else:
+                db.dbm_delete_data(sql_tree)
