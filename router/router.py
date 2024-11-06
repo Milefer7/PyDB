@@ -29,4 +29,14 @@ def router(sql_tree, db):
             else:
                 db.dbm_insert_data(sql_tree)
         case "select_data":
-            pass
+            if db.database_name is None:
+                print("error: No database selected")
+            elif not find_table(sql_tree.get("select_info").get("table_name"), db.database_path):
+                print("error: Table isn't created")
+            else:
+                select_type = sql_tree.get("select_info").get("select_type")
+                match select_type:
+                    case "select_all":
+                        db.dbm_select_all_data(sql_tree)
+                    case "simple_select":
+                        db.dbm_simple_select_data(sql_tree)
