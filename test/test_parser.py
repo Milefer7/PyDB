@@ -24,30 +24,38 @@ class TestSqlExecution(unittest.TestCase):
 
     # **********************************************************************************************
     # **********************************************************************************************
+    # 验证表删除是否成功
+    def test_drop_table(self):
+        user_input = 'DELETE FROM employees;'
+        result = self.run_sql(user_input)
+        self.assertIsNotNone(result)
+        print("删除表")
+        # 输出json格式化的结果
+        print(json.dumps(result, indent=2))
 
     # 验证选择 db 是否成功
     def test_use_database(self):
-        user_input = 'USE DATABASE test_db;'
+        user_input = 'USE test_db;'
         result = self.run_sql(user_input)
+        self.assertIsNotNone(result)
         print("选择数据库")
-        print(result)
-        print("***********************")
+        print(json.dumps(result, indent=2))
 
     # 验证 db 创建是否成功
     def test_create_database(self):
         user_input = 'CREATE DATABASE test_db;'
         result = self.run_sql(user_input)
+        self.assertIsNotNone(result)
         print("创建数据库")
-        print(result)
-        print("***********************")
+        print(json.dumps(result, indent=2))
 
     # 验证 db 展示是否成功
     def test_show_databases(self):
         user_input = 'SHOW DATABASES;'
         result = self.run_sql(user_input)
+        self.assertIsNotNone(result)
         print("展示数据库")
-        print(result)
-        print("***********************")
+        print(json.dumps(result, indent=2))
 
     # **********************************************************************************************
     # **********************************************************************************************
@@ -62,8 +70,8 @@ class TestSqlExecution(unittest.TestCase):
         );
         """
         result = self.run_sql(user_input)
-        print(result)
-        print("***********************")
+        self.assertIsNotNone(result)
+        print(json.dumps(result, indent=2))
 
     # **********************************************************************************************
     # **********************************************************************************************
@@ -77,9 +85,9 @@ class TestSqlExecution(unittest.TestCase):
         (3, 'Bob Smith', 64000.00, 'Engineering');
         '''
         result = self.run_sql(user_input)
+        self.assertIsNotNone(result)
         print("插入数据")
-        print(result)
-        print("***********************")
+        print(json.dumps(result, indent=2))
 
     def test_insert_data1000(self):
         user_input = '''
@@ -1086,8 +1094,26 @@ class TestSqlExecution(unittest.TestCase):
             (1000, 'Janet Walker', 69769.61, 'Engineering');
            '''
         result = self.run_sql(user_input)
-        print(result)
-        print("***********************")
+        self.assertIsNotNone(result)
+        print(json.dumps(result, indent=2))
+
+    # SELECT ALL
+    def test_select_all(self):
+        user_input = '''
+            SELECT * FROM employees;
+            '''
+        result = self.run_sql(user_input)
+        self.assertIsNotNone(result)
+        print(json.dumps(result, indent=2))
+
+    # simple SELECT
+    def test_select(self):
+        user_input = '''
+            SELECT name, salary FROM employees;
+            '''
+        result = self.run_sql(user_input)
+        self.assertIsNotNone(result)
+        print(json.dumps(result, indent=2))
 
 
 if __name__ == '__main__':
