@@ -1,8 +1,5 @@
 import utils.util
-from sql_core.executor import DatabaseManager
-from sql_core.executor import *
-from sql_core.parser import *
-import json
+from sql_core.compiler import *
 from router.router import *
 from colorama import Fore, Style
 

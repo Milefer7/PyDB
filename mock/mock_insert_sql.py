@@ -7,15 +7,14 @@ fake = Faker()
 # 定义部门列表
 departments = ['Engineering', 'HR', 'Finance', 'Marketing']
 
-
 # 生成1000条数据的SQL
 def generate_sql(num_records=1000):
-    sql = "INSERT INTO employees (id, name, salary, department) VALUES\n"
+    sql = "INSERT INTO employees (name, salary, department) VALUES\n"
     for i in range(1, num_records + 1):
-        name = fake.name()
+        name = fake.first_name()  # 只生成名字
         salary = round(random.uniform(50000, 100000), 2)  # 随机生成50,000到100,000之间的薪水
-        department = random.choice(departments)
-        sql += f"({i}, '{name}', {salary}, '{department}')"
+        department = random.choice(departments)  # 随机选择部门
+        sql += f"('{name}', {salary}, '{department}')"
 
         if i < num_records:
             sql += ",\n"
@@ -27,8 +26,8 @@ def generate_sql(num_records=1000):
 
 if __name__ == '__main__':
     # 生成SQL语句
-    sql = generate_sql(1000)
+    sql = generate_sql(1000000)
 
     # 输出结果
-    with open('insert1000.sql', 'w') as file:
+    with open('insert_1_million.sql', 'w') as file:
         file.write(sql)
