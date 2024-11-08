@@ -19,6 +19,9 @@ class TestSqlExecution(unittest.TestCase):
         运行 SQL 语句并返回结果
         """
         tokens = self.lexer.tokenize(user_input)
+        # 打印每个 token 的信息
+        # for token in tokens:
+        #     print(f"Type: {token.type}, Value: {token.value}")
         parser_tree = self.parser.parse(tokens)
         return parser_tree
 
