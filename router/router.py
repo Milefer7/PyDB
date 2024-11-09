@@ -21,6 +21,7 @@ def router(sql_tree, db):
             else:
                 db.dbm_create_table(sql_tree)
         case "insert_data":
+            # print(sql_tree.get("table_name"))
             if db.database_name is None:
                 print("error: No database selected")
             elif not find_table(sql_tree.get("table_name"), db.database_path):

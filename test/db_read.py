@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     # 打开并读取 SQL 文件
     try:
-        with open("../mock/insert_1_million.sql", 'r') as file:
+        with open("../mock/insert_1000000.sql", 'r') as file:
             # with open("../mock/insert_9000.sql", 'r') as file:
             query = file.read()
     except FileNotFoundError:
