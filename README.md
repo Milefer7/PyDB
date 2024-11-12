@@ -4,7 +4,7 @@
 
 ## :one:  **项目结构**
 
-```sh
+```
 PyDBMS
 ├── README.md          
 ├── client             # 客户端代码目录
@@ -43,7 +43,7 @@ PyDBMS
 
 ### 4.2 `SQL` 文法规则
 
-> 调用 [sly]([SLY (Sly Lex Yacc) — sly 0.0 documentation](https://sly.readthedocs.io/en/latest/sly.html)) 库，`LALR(1)` 文法
+> 调用 [sly](https://sly.readthedocs.io/en/latest/sly.html) 库，`LALR(1)` 文法
 
 ```
 <statement>       ::= <create_database> 
