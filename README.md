@@ -126,3 +126,19 @@ PyDBMS
                     | <conditional_delete>
 ```
 
+## :five: 如何跑起来
+
+```
+# 创建虚拟环境
+python3 -m venv .venv
+
+# 激活虚拟环境
+source .venv/bin/activate
+
+# 重新安装依赖
+pip install -r requirements.txt
+
+# 跑起来
+python main.py
+```
+

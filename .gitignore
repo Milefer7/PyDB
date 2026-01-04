@@ -1,0 +1,10 @@
+.venv
+# Python 字节码缓存目录
+__pycache__/
+*.py[cod]
+*$py.class
+config
+mock
+database
+demo.yml
+*.gif
