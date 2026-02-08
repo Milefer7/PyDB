@@ -1,0 +1,8 @@
+database
+.idea
+mock
+test/test_time_consuming_insert_data.py
+config
+.vscode
+.venv
+__pycache__/
