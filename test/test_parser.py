@@ -1,109 +1,350 @@
-# .\PyDB> python -m test.test_parser
-import json
+# (.venv) PS C:\Users\hello\myRespository\PyDB> python -m test.test_parser
 import unittest
 import sys
 import os
-from storage.engine import DatabaseManager
-from sql_core.compiler import SqlLexer
-from sql_core.compiler import SqlParser
-from mock.mock_data import DDL_CASES, INSERT_CASES, SELECT_CASES
 
-class TestSqlExecution(unittest.TestCase):
-    def setUp(self):
-        """
-        初始化解析器环境
-        """
-        self.db = DatabaseManager()  # 实例化数据库管理器
-        self.lexer = SqlLexer()  # 实例化词法分析器
-        self.parser = SqlParser(self.db)  # 实例化语法分析器
+# 将项目根目录加入到 sys.path 中，确保能导入编译器代码
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-    def run_sql(self, user_input):
-        if not user_input:
-            return None
-        tokens = self.lexer.tokenize(user_input)
-        # 注意：如果你的 SLY 版本不同，这里可能需要捕获 Lexer 错误
-        parser_tree = self.parser.parse(tokens)
-        return parser_tree
+# 假设你的编译器代码在根目录下的 compiler.py 中
+from sql_core.compiler import SqlLexer, SqlParser
 
-    def _test_and_assert(self, case_dict, key, expected_type, description):
-        """
-        通用测试方法
-        :param expected_type: 期望的 'type' 字段值
-        """
-        if key not in case_dict:
-            self.fail(f"Mock data key not found: {key}")
-            
-        sql = case_dict[key]
-        print(f"\n{'='*20} {description} {'='*20}")
-        print(f"SQL: {sql.strip()[:60]}...") 
-        
-        result = self.run_sql(sql)
-        
-        # 1. 基础断言：结果不为空
-        self.assertIsNotNone(result, f"❌ {description} 解析失败，返回了 None。请检查 SQL 语法或 Parser 规则。")
-
-        # 2. 打印结果 (方便调试)
-        print(f"Output:\n{json.dumps(result, indent=2, ensure_ascii=False)}")
-
-        # 3. 类型断言 logic
-        # 根据 compiler.py，SELECT 语句返回的是 {"type": "select_data", "select_info": {...}}
-        # 其他语句直接返回 {"type": "xxx", ...}
-        
-        actual_type = result.get('type')
-        
-        # 如果是 SELECT 语句，不仅要检查 type='select_data'，最好检查下 select_info 里的类型
-        if actual_type == 'select_data' and expected_type.startswith('select_'):
-            # 这是一个策略：如果期望的是 'select_data'，那就只通过。
-            # 但如果你想更细，可以检查内部。
-            pass 
-        
-        self.assertEqual(actual_type, expected_type, 
-                         f"❌ 类型不匹配！\n期望: {expected_type}\n实际: {actual_type}")
-        
-        print(f"✅ 断言通过: 类型匹配 ({expected_type})")
-
-    # **********************************************************************************************
-    # DDL 测试
-    # **********************************************************************************************
+class TestSqlCompiler(unittest.TestCase):
     
-    def test_create_db(self):
-        self._test_and_assert(DDL_CASES, 'create_db', 'create_database', "创建数据库")
+    @classmethod
+    def setUpClass(cls):
+        """在所有测试开始前初始化 Lexer 和 Parser"""
+        cls.lexer = SqlLexer()
+        cls.parser = SqlParser()
 
-    def test_use_db(self):
-        self._test_and_assert(DDL_CASES, 'use_db', 'use_database', "使用数据库")
+    def run_ast_test(self, sql_query, expected_ast):
+        """核心断言助手：接收 SQL 和期望的 AST，执行解析并做深度比对"""
+        tokens = self.lexer.tokenize(sql_query)
+        actual_ast = self.parser.parse(tokens)
         
-    def test_show_dbs(self):
-        self._test_and_assert(DDL_CASES, 'show_dbs', 'show_databases', "展示数据库")
+        self.assertEqual(
+            actual_ast, 
+            expected_ast, 
+            msg=f"\nSQL解析失败!\nSQL: {sql_query}\n期望: {expected_ast}\n实际: {actual_ast}"
+        )
 
-    def test_create_table(self):
-        self._test_and_assert(DDL_CASES, 'create_table', 'create_table', "创建表")
+    # =========================================================
+    # 阶段 1: DDL 测试 (建库建表)
+    # =========================================================
+    def test_01_ddl_statements(self):
+        test_cases = [
+            ("CREATE DATABASE company_db;", {"type": "create_database", "database_name": "company_db"}),
+            ("USE company_db;", {"type": "use_database", "database_name": "company_db"}),
+            (
+                """CREATE TABLE departments (
+                    id INT PRIMARY KEY,
+                    department_name VARCHAR(50) NOT NULL
+                );""",
+                {
+                  "type": "create_table", "table_name": "departments",
+                  "columns": [
+                    {"name": "id", "data_type": "int", "constraints": ["primary key"]},
+                    {"name": "department_name", "data_type": "varchar(50)", "constraints": ["not null"]}
+                  ]
+                }
+            ),
+            (
+                """CREATE TABLE employees (
+                    id INT PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    age INT,
+                    salary DECIMAL(10, 2),
+                    dept_id INT,
+                    performance_score FLOAT, 
+                    bonus DOUBLE
+                );""",
+                {
+                  "type": "create_table", "table_name": "employees",
+                  "columns": [
+                    {"name": "id", "data_type": "int", "constraints": ["primary key"]},
+                    {"name": "name", "data_type": "varchar(100)", "constraints": ["not null"]},
+                    {"name": "age", "data_type": "int", "constraints": []},
+                    {"name": "salary", "data_type": "decimal(10,2)", "constraints": []},
+                    {"name": "dept_id", "data_type": "int", "constraints": []},
+                    {"name": "performance_score", "data_type": "float", "constraints": []},
+                    {"name": "bonus", "data_type": "double", "constraints": []}
+                  ]
+                }
+            ),
+            (
+                """CREATE TABLE customers (
+                    id INT PRIMARY KEY,
+                    username VARCHAR(50) NOT NULL,
+                    city VARCHAR(50)
+                );""",
+                {
+                  "type": "create_table", "table_name": "customers",
+                  "columns": [
+                    {"name": "id", "data_type": "int", "constraints": ["primary key"]},
+                    {"name": "username", "data_type": "varchar(50)", "constraints": ["not null"]},
+                    {"name": "city", "data_type": "varchar(50)", "constraints": []}
+                  ]
+                }
+            ),
+            (
+                """CREATE TABLE orders (
+                    id INT PRIMARY KEY,
+                    customer_id INT NOT NULL,
+                    amount FLOAT,
+                    order_date VARCHAR(20)
+                );""",
+                {
+                  "type": "create_table", "table_name": "orders",
+                  "columns": [
+                    {"name": "id", "data_type": "int", "constraints": ["primary key"]},
+                    {"name": "customer_id", "data_type": "int", "constraints": ["not null"]},
+                    {"name": "amount", "data_type": "float", "constraints": []},
+                    {"name": "order_date", "data_type": "varchar(20)", "constraints": []}
+                  ]
+                }
+            )
+        ]
+        for sql, expected in test_cases:
+            with self.subTest(sql=sql):
+                self.run_ast_test(sql, expected)
 
-    # **********************************************************************************************
-    # INSERT 测试
-    # **********************************************************************************************
+    # =========================================================
+    # 阶段 2: 制造测试数据 (DML - INSERT)
+    # =========================================================
+    def test_02_insert_statements(self):
+        test_cases = [
+            (
+                "INSERT INTO departments (id, department_name) VALUES (1, 'Engineering'), (2, 'Marketing'), (3, 'HR');",
+                {
+                  "type": "insert", "table_name": "departments",
+                  "columns": ["id", "department_name"],
+                  "values": [
+                    [{"type": "literal", "value": 1}, {"type": "literal", "value": "Engineering"}],
+                    [{"type": "literal", "value": 2}, {"type": "literal", "value": "Marketing"}],
+                    [{"type": "literal", "value": 3}, {"type": "literal", "value": "HR"}]
+                  ]
+                }
+            ),
+            (
+                """INSERT INTO employees (id, name, age, salary, dept_id, performance_score, bonus) VALUES 
+                (1, 'Alice', 28, 45000.00, 2, 4.5, 0),
+                (2, 'John Doe', 32, 55000.00, 1, 3.8, 0), 
+                (3, 'Alice Johnson', 45, 72000.00, 2, 4.9, 0), 
+                (4, 'Bob Smith', 22, 64000.00, 1, 4.2, 0),
+                (5, 'Charlie HR', 29, 30000.00, 3, 3.0, 0);""",
+                {
+                  "type": "insert", "table_name": "employees",
+                  "columns": ["id", "name", "age", "salary", "dept_id", "performance_score", "bonus"],
+                  "values": [
+                    [{"type": "literal", "value": 1}, {"type": "literal", "value": "Alice"}, {"type": "literal", "value": 28}, {"type": "literal", "value": 45000.0}, {"type": "literal", "value": 2}, {"type": "literal", "value": 4.5}, {"type": "literal", "value": 0}],
+                    [{"type": "literal", "value": 2}, {"type": "literal", "value": "John Doe"}, {"type": "literal", "value": 32}, {"type": "literal", "value": 55000.0}, {"type": "literal", "value": 1}, {"type": "literal", "value": 3.8}, {"type": "literal", "value": 0}],
+                    [{"type": "literal", "value": 3}, {"type": "literal", "value": "Alice Johnson"}, {"type": "literal", "value": 45}, {"type": "literal", "value": 72000.0}, {"type": "literal", "value": 2}, {"type": "literal", "value": 4.9}, {"type": "literal", "value": 0}],
+                    [{"type": "literal", "value": 4}, {"type": "literal", "value": "Bob Smith"}, {"type": "literal", "value": 22}, {"type": "literal", "value": 64000.0}, {"type": "literal", "value": 1}, {"type": "literal", "value": 4.2}, {"type": "literal", "value": 0}],
+                    [{"type": "literal", "value": 5}, {"type": "literal", "value": "Charlie HR"}, {"type": "literal", "value": 29}, {"type": "literal", "value": 30000.0}, {"type": "literal", "value": 3}, {"type": "literal", "value": 3.0}, {"type": "literal", "value": 0}]
+                  ]
+                }
+            ),
+            (
+                "INSERT INTO customers (id, username, city) VALUES (1, 'Alice', 'New York'), (2, 'Bob', 'London'), (3, 'Charlie', 'Paris');",
+                {
+                  "type": "insert", "table_name": "customers",
+                  "columns": ["id", "username", "city"],
+                  "values": [
+                    [{"type": "literal", "value": 1}, {"type": "literal", "value": "Alice"}, {"type": "literal", "value": "New York"}],
+                    [{"type": "literal", "value": 2}, {"type": "literal", "value": "Bob"}, {"type": "literal", "value": "London"}],
+                    [{"type": "literal", "value": 3}, {"type": "literal", "value": "Charlie"}, {"type": "literal", "value": "Paris"}]
+                  ]
+                }
+            ),
+            (
+                """INSERT INTO orders (id, customer_id, amount, order_date) VALUES 
+                (101, 1, 250.50, '2026-02-20'),
+                (102, 1, 120.00, '2026-02-21'),
+                (103, 2, 999.99, '2026-02-21'),
+                (104, 3, 45.00, '2026-02-22');""",
+                {
+                  "type": "insert", "table_name": "orders",
+                  "columns": ["id", "customer_id", "amount", "order_date"],
+                  "values": [
+                    [{"type": "literal", "value": 101}, {"type": "literal", "value": 1}, {"type": "literal", "value": 250.5}, {"type": "literal", "value": "2026-02-20"}],
+                    [{"type": "literal", "value": 102}, {"type": "literal", "value": 1}, {"type": "literal", "value": 120.0}, {"type": "literal", "value": "2026-02-21"}],
+                    [{"type": "literal", "value": 103}, {"type": "literal", "value": 2}, {"type": "literal", "value": 999.99}, {"type": "literal", "value": "2026-02-21"}],
+                    [{"type": "literal", "value": 104}, {"type": "literal", "value": 3}, {"type": "literal", "value": 45.0}, {"type": "literal", "value": "2026-02-22"}]
+                  ]
+                }
+            )
+        ]
+        for sql, expected in test_cases:
+            with self.subTest(sql=sql):
+                self.run_ast_test(sql, expected)
 
-    def test_insert_10(self):
-        self._test_and_assert(INSERT_CASES, 'insert_10', 'insert_data', "批量插入10条")
+    # =========================================================
+    # 阶段 3: 数据更新与清洗 (DML - UPDATE/DELETE)
+    # =========================================================
+    def test_03_update_delete(self):
+        test_cases = [
+            (
+                "UPDATE employees SET bonus = bonus + 5000 WHERE performance_score >= 4.0;",
+                {
+                  "type": "update", "table_name": "employees",
+                  "assignments": [
+                    {
+                      "column": "bonus",
+                      "value": {"type": "math_op", "operator": "+", "left": {"type": "column", "value": "bonus"}, "right": {"type": "literal", "value": 5000}}
+                    }
+                  ],
+                  "where": {
+                    "type": "compare_op", "operator": ">=",
+                    "left": {"type": "column", "value": "performance_score"},
+                    "right": {"type": "literal", "value": 4.0}
+                  }
+                }
+            ),
+            (
+                "DELETE FROM employees WHERE performance_score <= 3.0 AND salary < 40000.00;",
+                {
+                  "type": "delete", "table_name": "employees",
+                  "where": {
+                    "type": "logical_op", "operator": "AND",
+                    "left": {
+                      "type": "compare_op", "operator": "<=",
+                      "left": {"type": "column", "value": "performance_score"},
+                      "right": {"type": "literal", "value": 3.0}
+                    },
+                    "right": {
+                      "type": "compare_op", "operator": "<",
+                      "left": {"type": "column", "value": "salary"},
+                      "right": {"type": "literal", "value": 40000.0}
+                    }
+                  }
+                }
+            )
+        ]
+        for sql, expected in test_cases:
+            with self.subTest(sql=sql):
+                self.run_ast_test(sql, expected)
 
-    # **********************************************************************************************
-    # SELECT 测试
-    # **********************************************************************************************
+    # =========================================================
+    # 阶段 4: 核心表达式与查询流水线测试 (DQL)
+    # =========================================================
+    def test_04_select_queries(self):
+        test_cases = [
+            ("SELECT * FROM employees;", {
+              "type": "select", "select_list": ["*"], "table_source": {"table": "employees", "alias": None},
+              "join": [], "where": None, "group_by": None, "order_by": None, "limit": None
+            }),
+            ("SELECT * FROM employees WHERE name LIKE 'Alice%';", {
+              "type": "select", "select_list": ["*"], "table_source": {"table": "employees", "alias": None},
+              "join": [], "where": {"type": "compare_op", "operator": "LIKE", "left": {"type": "column", "value": "name"}, "right": {"type": "literal", "value": "Alice%"}},
+              "group_by": None, "order_by": None, "limit": None
+            }),
+            ("SELECT name, salary, bonus FROM employees WHERE salary + bonus > 60000;", {
+              "type": "select", 
+              "select_list": [{"type": "column", "value": "name"}, {"type": "column", "value": "salary"}, {"type": "column", "value": "bonus"}],
+              "table_source": {"table": "employees", "alias": None}, "join": [],
+              "where": {"type": "compare_op", "operator": ">", "left": {"type": "math_op", "operator": "+", "left": {"type": "column", "value": "salary"}, "right": {"type": "column", "value": "bonus"}}, "right": {"type": "literal", "value": 60000}},
+              "group_by": None, "order_by": None, "limit": None
+            }),
+            ("SELECT COUNT(*), AVG(salary) FROM employees;", {
+              "type": "select",
+              "select_list": [{"type": "func", "name": "COUNT", "args": "*"}, {"type": "func", "name": "AVG", "args": {"type": "column", "value": "salary"}}],
+              "table_source": {"table": "employees", "alias": None}, "join": [], "where": None, "group_by": None, "order_by": None, "limit": None
+            }),
+            ("SELECT dept_id FROM employees GROUP BY dept_id;", {
+              "type": "select", "select_list": [{"type": "column", "value": "dept_id"}],
+              "table_source": {"table": "employees", "alias": None}, "join": [], "where": None, "group_by": ["dept_id"], "order_by": None, "limit": None
+            }),
+            (
+                """SELECT c.id, c.username, o.amount, o.order_date
+                FROM customers c
+                JOIN orders o ON c.id = o.customer_id;""",
+                {
+                  "type": "select",
+                  "select_list": [{"type": "column", "value": "c.id"}, {"type": "column", "value": "c.username"}, {"type": "column", "value": "o.amount"}, {"type": "column", "value": "o.order_date"}],
+                  "table_source": {"table": "customers", "alias": "c"},
+                  "join": [
+                    {"type": "INNER", "table": {"table": "orders", "alias": "o"}, "on": {"type": "compare_op", "operator": "=", "left": {"type": "column", "value": "c.id"}, "right": {"type": "column", "value": "o.customer_id"}}}
+                  ],
+                  "where": None, "group_by": None, "order_by": None, "limit": None
+                }
+            )
+        ]
+        for sql, expected in test_cases:
+            with self.subTest(sql=sql):
+                self.run_ast_test(sql, expected)
 
-    def test_select_all(self):
-        self._test_and_assert(SELECT_CASES, 'select_all', 'select_data', "查询所有")
+    # =========================================================
+    # 阶段 5: 🌟 终极压力测试 (The Ultimate Pipeline)
+    # =========================================================
+    def test_05_ultimate_pipeline(self):
+        sql = """
+        SELECT e.name, d.department_name, e.salary
+        FROM employees e
+        JOIN departments d ON e.dept_id = d.id
+        WHERE (e.age > 25 AND e.salary >= 50000) OR e.name LIKE 'A%'
+        GROUP BY d.department_name
+        ORDER BY e.salary DESC
+        LIMIT 5;
+        """
+        expected_ast = {
+          "type": "select",
+          "select_list": [
+            {"type": "column", "value": "e.name"},
+            {"type": "column", "value": "d.department_name"},
+            {"type": "column", "value": "e.salary"}
+          ],
+          "table_source": {"table": "employees", "alias": "e"},
+          "join": [
+            {
+              "type": "INNER",
+              "table": {"table": "departments", "alias": "d"},
+              "on": {
+                "type": "compare_op", "operator": "=",
+                "left": {"type": "column", "value": "e.dept_id"},
+                "right": {"type": "column", "value": "d.id"}
+              }
+            }
+          ],
+          "where": {
+            "type": "logical_op", "operator": "OR",
+            "left": {
+              "type": "logical_op", "operator": "AND",
+              "left": {
+                "type": "compare_op", "operator": ">",
+                "left": {"type": "column", "value": "e.age"},
+                "right": {"type": "literal", "value": 25}
+              },
+              "right": {
+                "type": "compare_op", "operator": ">=",
+                "left": {"type": "column", "value": "e.salary"},
+                "right": {"type": "literal", "value": 50000}
+              }
+            },
+            "right": {
+              "type": "compare_op", "operator": "LIKE",
+              "left": {"type": "column", "value": "e.name"},
+              "right": {"type": "literal", "value": "A%"}
+            }
+          },
+          "group_by": ["d.department_name"],
+          "order_by": [
+            {"column": "e.salary", "direction": "DESC"}
+          ],
+          "limit": 5
+        }
+        self.run_ast_test(sql, expected_ast)
 
-    def test_select_columns(self):
-        self._test_and_assert(SELECT_CASES, 'select_columns', 'select_data', "查询指定列")
-    
-    # 注意：如果你没有修复 mock_data 里的 SSELECT 拼写错误，这个测试会挂
-    # def test_select_order(self):
-    #     self._test_and_assert(SELECT_CASES, 'select_order', 'select_data', "排序查询")
+    # =========================================================
+    # 阶段 6: 破坏性测试 (清理)
+    # =========================================================
+    def test_06_drop_statements(self):
+        test_cases = [
+            ("DROP TABLE employees;", {"type": "drop_table", "table_name": "employees"}),
+            ("DROP DATABASE company_db;", {"type": "drop_database", "database_name": "company_db"})
+        ]
+        for sql, expected in test_cases:
+            with self.subTest(sql=sql):
+                self.run_ast_test(sql, expected)
 
-    # def test_drop_table_data(self):
-    #     # 注意：你的 mock_data 里写的是 'drop_table'，但 SQL 是 'DELETE FROM...'
-    #     # 根据 compiler.py，DELETE FROM 返回的是 'delete_data'
-    #     self._test_and_assert(DDL_CASES, 'drop_table', 'delete_data', "删除表数据")
-
-    
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
