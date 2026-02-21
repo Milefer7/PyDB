@@ -1,161 +1,93 @@
-import os
-import pandas as pd
-from transaction import log
-from utils.util import *
-import json
-from tabulate import tabulate
-
+# 变成总经理(Facade)，统筹上面三个小弟
+# 注意这里的导入路径适配了你的项目结构
+from storage.metadata import MetadataManager
+from storage.validator import Validator
+from storage.executor import Executor
+from utils.util import timeit
 
 class DatabaseManager:
     def __init__(self):
-        self.root_dir = 'database'
-        self.database_name = None
-        self.database_path = None
-        self.log_path = None
+        # 实例化元数据管家
+        self.metadata = MetadataManager()
+
+    @property
+    def database_name(self): return self.metadata.database_name
+    @property
+    def database_path(self): return self.metadata.database_path
 
     @staticmethod
     @timeit
-    def dbm_show_database():
-        root_dir = 'database'
-        if not os.path.exists(root_dir):
-            print('No database exists', end='')
-        else:
-            databases = []
-            for item in os.listdir(root_dir):
-                path = os.path.join(root_dir, item)
-                if os.path.isdir(path):
-                    databases.append(item)
-            if databases:
-                print(f"databases: {databases}", end='')
-            else:
-                print("databases are none.", end='')
+    def dbm_show_database(): 
+        MetadataManager().show_databases()
 
     @staticmethod
     @timeit
-    def dbm_create_database(sql_tree):
-        database_name = sql_tree.get("database_name")
-        # 如果根目录下database文件夹不存在，创建一个
-        root_dir = 'database'
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
-            print(f"Created root directory: {root_dir}", end='')
+    def dbm_create_database(sql_tree): 
+        MetadataManager().create_database(sql_tree.get("database_name"))
 
-        database_path = os.path.join(root_dir, database_name)
-        if not os.path.exists(database_path):
-            os.makedirs(database_path)
-            print(f"Database '{database_name}' created at: {database_path}", end='')
-            # 初始化日志
-            log.init_log(database_path)
-        else:
-            print(f"Database '{database_name}' already exists", end='')
+    @staticmethod
+    @timeit
+    def dbm_drop_database(sql_tree): 
+        MetadataManager().drop_database(sql_tree.get("database_name"))
 
     @timeit
-    def dbm_use_database(self, sql_tree):
-        self.database_name = sql_tree.get("database_name")
-        self.database_path = os.path.join(self.root_dir, self.database_name)
-        self.log_path = os.path.join(self.database_path, 'log.txt')
-
-        # print(f"Database Name: {self.database_name}")
-        # print(f"Database Path: {self.database_path}")
-        # print(f"Log Path: {self.log_path}")
-
-        print("Database changed", end='')
+    def dbm_use_database(self, sql_tree): 
+        self.metadata.use_database(sql_tree.get("database_name"))
 
     @timeit
-    def dbm_create_table(self, sql_tree):
-        # print(json.dumps(sql_tree, indent=2))
-        table_name = sql_tree.get("table_name")
-        columns = sql_tree.get("columns")
-        schema = []
+    def dbm_create_table(self, sql_tree): 
+        self.metadata.create_table(sql_tree)
 
-        for column in columns:
-            name = column.get("name")
-            data_type = column.get("data_type")
-            constraints = column.get("constraints", [])
+    @timeit
+    def dbm_drop_table(self, sql_tree): 
+        self.metadata.drop_table(sql_tree)
 
-            # 检查是否有主键和非空约束
-            is_primary_key = 'primary key' in constraints
-            is_not_null = 'not null' in constraints
-
-            # 添加每列的信息到结构数据中
-            schema.append({
-                "name": name,
-                "data_type": data_type,
-                "is_primary_key": is_primary_key,
-                "is_not_null": is_not_null
-            })
-
-        # 表约束条件
-        schema_df = pd.DataFrame(schema)
-        schema_table_name = f"{table_name}_schema"
-
-        schema_file_path = os.path.join(self.database_path, schema_table_name)
-        # 将约束存储为 CSV 文件
-        schema_df.to_csv(f"{schema_file_path}.csv", index=False)
-
-        # 表数据
-        data_df = pd.DataFrame(columns=[col['name'] for col in schema])
-        data_file_path = os.path.join(self.database_path, table_name)
-        data_df.to_csv(f"{data_file_path}.csv", index=False)
-
-        print("Table created successfully.", end='')
-
+    # 核心 DML：三层协作
     @timeit
     def dbm_insert_data(self, sql_tree):
         table_name = sql_tree.get("table_name")
-        schema_table_name = f"{table_name}_schema"
 
-        # 读取数据结构定义文件
-        path_table_schema = f"{os.path.join(self.database_path, schema_table_name)}.csv"
-        # print(path_table_schema)
-        with open(path_table_schema) as f:
-            schema = pd.read_csv(path_table_schema)
-
-        # column_order = [col["name"] for col in schema["name"]]
-        # primary_key = next((col["name"] for col in schema["columns"] if col.get("primary_key")), None)
-        # nullable_columns = {col["name"]: col["nullable"] for col in schema["columns"]}
-
-        # 对数据的处理
-        columns = sql_tree["columns"]
-        values = sql_tree["insert_clause"]["values"]
-        new_data = pd.DataFrame(values, columns=columns)
-        row_count = len(new_data)
-
-        # data_file_path 是 CSV 数据文件的路径
-        data_file_path = os.path.join(self.database_path, f"{table_name}.csv")
-
-        # 将 new_data 追加到现有的 CSV 文件中
-        new_data.to_csv(data_file_path, mode='a', header=False, index=False)
-
-        print(f"Query OK, {row_count} row affected", end='')
-
-    # 选择数据
-    @timeit  # 查找全部
-    def dbm_select_all_data(self, sql_tree):
-        table_name = sql_tree.get("select_info").get("table_name")
-        data_file_path = os.path.join(self.database_path, f"{table_name}.csv")
-        data = pd.read_csv(data_file_path)
-        # print(data.to_string(index=False), end='')
-        print(tabulate(data, headers='keys', tablefmt='grid'))
-
-    @timeit  # 简单查找
-    def dbm_simple_select_data(self, sql_tree):
-        # print(json.dumps(sql_tree, indent=2))
-        table_name = sql_tree.get("select_info").get("table_name")
-        select_info = sql_tree.get("select_info")
-        columns = select_info.get("columns")
-        # print(columns)
-        data_file_path = os.path.join(self.database_path, f"{table_name}.csv")
-        data = pd.read_csv(data_file_path)
-        # 筛选出columns中的列
-        data = data[columns]
-        print(tabulate(data, headers='keys', tablefmt='grid'))
+        # 1. 向 Metadata 要数据
+        schema_df = self.metadata.load_schema(table_name)
+        existing_df = self.metadata.load_table(table_name)
+        
+        # 2. 交给 Validator 拦截
+        is_valid, full_new_df = Validator.validate_insert(
+            sql_tree.get("columns"), sql_tree.get("values"), 
+            schema_df, existing_df, Executor.eval_value
+        )
+        if not is_valid: return
+            
+        # 3. 交给 Metadata 落盘
+        full_new_df.to_csv(self.metadata.get_table_path(table_name), mode='a', header=False, index=False)
+        print(f"Query OK, {len(full_new_df)} row(s) affected.", end='')
 
     @timeit
     def dbm_delete_data(self, sql_tree):
-        table_name = sql_tree.get("delete_clause").get("table_name")
-        data_file_path = os.path.join(self.database_path, f"{table_name}.csv")
-        scheme_file_path = os.path.join(self.database_path, f"{table_name}_schema.csv")
-        os.remove(data_file_path)
-        os.remove(scheme_file_path)
-        print("Table deleted successfully", end='')
+        table_name = sql_tree.get("table_name")
+        df = self.metadata.load_table(table_name)
+        # 交给 Executor 执行删除
+        new_df = Executor.execute_delete(df, sql_tree.get("where"))
+        new_df.to_csv(self.metadata.get_table_path(table_name), index=False)
+        print(f"Query OK, {len(df) - len(new_df)} row(s) deleted.", end='')
+
+    @timeit
+    def dbm_update_data(self, sql_tree):
+        table_name = sql_tree.get("table_name")
+        
+        # 1. 向 Metadata 要数据 (只读文件，不计算)
+        df = self.metadata.load_table(table_name)
+        
+        # 2. 交给 Executor 执行核心计算 (只算账，不碰文件)
+        new_df, affected = Executor.execute_update(df, sql_tree.get("assignments"), sql_tree.get("where"))
+        
+        # 3. 再次交给 Metadata 落盘保存
+        new_df.to_csv(self.metadata.get_table_path(table_name), index=False)
+        
+        print(f"Query OK, {affected} row(s) updated.", end='')
+
+    @timeit
+    def dbm_select_data(self, sql_tree):
+        df = self.metadata.load_table(sql_tree.get("table_source").get("table"))
+        # 交给 Executor 执行查询流水线并打印
+        Executor.execute_select(df, sql_tree)
