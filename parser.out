@@ -1,211 +1,248 @@
 Grammar:
 
 Rule 0     S' -> statement
-Rule 1     statement -> delete_data
-Rule 2     statement -> select_data
-Rule 3     statement -> insert_data
-Rule 4     statement -> use_database
-Rule 5     statement -> show_databases
+Rule 1     statement -> select_data
+Rule 2     statement -> delete_data
+Rule 3     statement -> update_data
+Rule 4     statement -> insert_data
+Rule 5     statement -> drop_table
 Rule 6     statement -> create_table
-Rule 7     statement -> create_database
-Rule 8     delete_data -> DELETE FROM IDENTIFIER
-Rule 9     use_database -> USE IDENTIFIER
-Rule 10    show_databases -> SHOW DATABASES
+Rule 7     statement -> use_database
+Rule 8     statement -> show_databases
+Rule 9     statement -> drop_database
+Rule 10    statement -> create_database
 Rule 11    create_database -> CREATE DATABASE IDENTIFIER
-Rule 12    create_table -> CREATE TABLE IDENTIFIER ( columns )
-Rule 13    columns -> column column_list
-Rule 14    column_list -> <empty>
-Rule 15    column_list -> , column
-Rule 16    column_list -> , column column_list
-Rule 17    column -> IDENTIFIER data_type constraints
-Rule 18    data_type -> DECIMAL ( NUMBER , NUMBER )
-Rule 19    data_type -> VARCHAR ( NUMBER )
-Rule 20    data_type -> DOUBLE
-Rule 21    data_type -> TIMESTAMP
-Rule 22    data_type -> FLOAT
-Rule 23    data_type -> INT
-Rule 24    constraints -> <empty>
-Rule 25    constraints -> constraint
-Rule 26    constraints -> constraint constraints
-Rule 27    constraint -> NOT_NULL
-Rule 28    constraint -> PRIMARY_KEY
-Rule 29    insert_data -> INSERT INTO IDENTIFIER ( data_columns ) insert_clause
-Rule 30    insert_clause -> VALUES values_clause
-Rule 31    insert_clause -> SELECT select_data
-Rule 32    values_clause -> ( datas )
-Rule 33    values_clause -> ( datas ) , values_clause
-Rule 34    datas -> data
-Rule 35    datas -> datas , data
-Rule 36    select_data -> subquery_select
-Rule 37    select_data -> join_select
-Rule 38    select_data -> ordered_select
-Rule 39    select_data -> conditional_select
-Rule 40    select_data -> simple_select
-Rule 41    select_data -> select_all
-Rule 42    select_all -> SELECT * from_clause
-Rule 43    simple_select -> SELECT data_columns from_clause
-Rule 44    subquery_select -> SELECT data_columns from_clause where_in_clause
-Rule 45    conditional_select -> SELECT data_columns from_clause where_clause
-Rule 46    ordered_select -> SELECT data_columns from_clause order_by_clause
-Rule 47    join_select -> SELECT alias_columns from_clause_with_alias join_clause
-Rule 48    from_clause_with_alias -> FROM data data
-Rule 49    from_clause -> FROM data
-Rule 50    where_in_clause -> WHERE data . data IN ( select_data )
-Rule 51    where_clause -> WHERE conditions
-Rule 52    order_by_clause -> ORDER_BY order_clause
-Rule 53    alias_columns -> alias_column
-Rule 54    alias_columns -> alias_column , alias_columns
-Rule 55    data_columns -> data
-Rule 56    data_columns -> data , data_columns
-Rule 57    alias_column -> qualified_data
-Rule 58    data -> NUMBER
-Rule 59    data -> IDENTIFIER
-Rule 60    data -> ' IDENTIFIER '
-Rule 61    data -> ' IDENTIFIER IDENTIFIER '
-Rule 62    qualified_data -> data . data
-Rule 63    conditions -> <empty>
-Rule 64    conditions -> condition OR conditions  [precedence=left, level=1]
-Rule 65    conditions -> condition AND conditions  [precedence=left, level=2]
-Rule 66    conditions -> condition
-Rule 67    condition -> data OPERATOR data
-Rule 68    condition -> data . data OPERATOR data
-Rule 69    condition -> data . data OPERATOR data . data
-Rule 70    order_clause -> data DESC
-Rule 71    order_clause -> data ASC
-Rule 72    join_clause -> JOIN data . data ON condition
+Rule 12    drop_database -> DROP DATABASE IDENTIFIER
+Rule 13    show_databases -> SHOW DATABASES
+Rule 14    use_database -> USE IDENTIFIER
+Rule 15    create_table -> CREATE TABLE IDENTIFIER ( column_defs )
+Rule 16    drop_table -> DROP TABLE IDENTIFIER
+Rule 17    column_defs -> column_def
+Rule 18    column_defs -> column_defs , column_def
+Rule 19    column_def -> IDENTIFIER data_type opt_constraints
+Rule 20    data_type -> DECIMAL ( NUMBER , NUMBER )
+Rule 21    data_type -> VARCHAR ( NUMBER )
+Rule 22    data_type -> TIMESTAMP
+Rule 23    data_type -> DOUBLE
+Rule 24    data_type -> FLOAT
+Rule 25    data_type -> INT
+Rule 26    opt_constraints -> <empty>
+Rule 27    opt_constraints -> constraint
+Rule 28    opt_constraints -> constraint opt_constraints
+Rule 29    constraint -> NOT NULL
+Rule 30    constraint -> PRIMARY KEY
+Rule 31    insert_data -> INSERT INTO IDENTIFIER ( ident_list ) VALUES values_list
+Rule 32    update_data -> UPDATE IDENTIFIER SET assignment_list opt_where
+Rule 33    delete_data -> DELETE FROM IDENTIFIER opt_where
+Rule 34    ident_list -> IDENTIFIER
+Rule 35    ident_list -> ident_list , IDENTIFIER
+Rule 36    ref_list -> identifier_ref
+Rule 37    ref_list -> ref_list , identifier_ref
+Rule 38    values_list -> ( expr_list )
+Rule 39    values_list -> values_list , ( expr_list )
+Rule 40    assignment_list -> IDENTIFIER = expr  [precedence=left, level=3]
+Rule 41    assignment_list -> assignment_list , IDENTIFIER = expr  [precedence=left, level=3]
+Rule 42    select_data -> SELECT select_list FROM table_source opt_join opt_where opt_group_by opt_order_by opt_limit
+Rule 43    select_list -> expr_list
+Rule 44    select_list -> *  [precedence=left, level=5]
+Rule 45    table_ref -> IDENTIFIER
+Rule 46    table_ref -> IDENTIFIER AS IDENTIFIER
+Rule 47    table_ref -> IDENTIFIER IDENTIFIER
+Rule 48    table_source -> table_ref
+Rule 49    opt_join -> <empty>
+Rule 50    opt_join -> opt_join LEFT JOIN table_ref ON expr
+Rule 51    opt_join -> opt_join JOIN table_ref ON expr
+Rule 52    opt_where -> <empty>
+Rule 53    opt_where -> WHERE expr
+Rule 54    opt_group_by -> <empty>
+Rule 55    opt_group_by -> GROUP BY ref_list
+Rule 56    opt_order_by -> <empty>
+Rule 57    opt_order_by -> ORDER BY order_list
+Rule 58    opt_limit -> <empty>
+Rule 59    opt_limit -> LIMIT NUMBER
+Rule 60    order_list -> identifier_ref
+Rule 61    order_list -> identifier_ref DESC
+Rule 62    order_list -> identifier_ref ASC
+Rule 63    order_list -> order_list , identifier_ref
+Rule 64    order_list -> order_list , identifier_ref DESC
+Rule 65    order_list -> order_list , identifier_ref ASC
+Rule 66    expr_list -> expr
+Rule 67    expr_list -> expr_list , expr
+Rule 68    expr -> STRING
+Rule 69    expr -> NUMBER
+Rule 70    expr -> identifier_ref
+Rule 71    expr -> MIN ( expr )
+Rule 72    expr -> MAX ( expr )
+Rule 73    expr -> SUM ( expr )
+Rule 74    expr -> COUNT ( expr )
+Rule 75    expr -> AVG ( expr )
+Rule 76    expr -> COUNT ( * )
+Rule 77    expr -> ( expr )
+Rule 78    expr -> expr / expr  [precedence=left, level=5]
+Rule 79    expr -> expr * expr  [precedence=left, level=5]
+Rule 80    expr -> expr - expr  [precedence=left, level=4]
+Rule 81    expr -> expr + expr  [precedence=left, level=4]
+Rule 82    expr -> expr LIKE expr  [precedence=left, level=3]
+Rule 83    expr -> expr NEQ expr  [precedence=left, level=3]
+Rule 84    expr -> expr GTE expr  [precedence=left, level=3]
+Rule 85    expr -> expr LTE expr  [precedence=left, level=3]
+Rule 86    expr -> expr < expr  [precedence=left, level=3]
+Rule 87    expr -> expr > expr  [precedence=left, level=3]
+Rule 88    expr -> expr = expr  [precedence=left, level=3]
+Rule 89    expr -> expr OR expr  [precedence=left, level=1]
+Rule 90    expr -> expr AND expr  [precedence=left, level=2]
+Rule 91    identifier_ref -> IDENTIFIER
+Rule 92    identifier_ref -> IDENTIFIER . IDENTIFIER
+
+Unused terminals:
+
+    IN
 
 Terminals, with rules where they appear:
 
-'                    : 60 60 61 61
-(                    : 12 18 19 29 32 33 50
-)                    : 12 18 19 29 32 33 50
-*                    : 42
-,                    : 15 16 18 33 35 54 56
-.                    : 50 62 68 69 69 72
-AND                  : 65
-ASC                  : 71
-CREATE               : 11 12
-DATABASE             : 11
-DATABASES            : 10
-DECIMAL              : 18
-DELETE               : 8
-DESC                 : 70
-DOUBLE               : 20
-FLOAT                : 22
-FROM                 : 8 48 49
-IDENTIFIER           : 8 9 11 12 17 29 59 60 61 61
-IN                   : 50
-INSERT               : 29
-INT                  : 23
-INTO                 : 29
-JOIN                 : 72
-NOT_NULL             : 27
-NUMBER               : 18 18 19 58
-ON                   : 72
-OPERATOR             : 67 68 69
-OR                   : 64
-ORDER_BY             : 52
-PRIMARY_KEY          : 28
-SELECT               : 31 42 43 44 45 46 47
-SHOW                 : 10
-TABLE                : 12
-TIMESTAMP            : 21
-USE                  : 9
-VALUES               : 30
-VARCHAR              : 19
-WHERE                : 50 51
+(                    : 15 20 21 31 38 39 71 72 73 74 75 76 77
+)                    : 15 20 21 31 38 39 71 72 73 74 75 76 77
+*                    : 44 76 79
++                    : 81
+,                    : 18 20 35 37 39 41 63 64 65 67
+-                    : 80
+.                    : 92
+/                    : 78
+<                    : 86
+=                    : 40 41 88
+>                    : 87
+AND                  : 90
+AS                   : 46
+ASC                  : 62 65
+AVG                  : 75
+BY                   : 55 57
+COUNT                : 74 76
+CREATE               : 11 15
+DATABASE             : 11 12
+DATABASES            : 13
+DECIMAL              : 20
+DELETE               : 33
+DESC                 : 61 64
+DOUBLE               : 23
+DROP                 : 12 16
+FLOAT                : 24
+FROM                 : 33 42
+GROUP                : 55
+GTE                  : 84
+IDENTIFIER           : 11 12 14 15 16 19 31 32 33 34 35 40 41 45 46 46 47 47 91 92 92
+IN                   : 
+INSERT               : 31
+INT                  : 25
+INTO                 : 31
+JOIN                 : 50 51
+KEY                  : 30
+LEFT                 : 50
+LIKE                 : 82
+LIMIT                : 59
+LTE                  : 85
+MAX                  : 72
+MIN                  : 71
+NEQ                  : 83
+NOT                  : 29
+NULL                 : 29
+NUMBER               : 20 20 21 59 69
+ON                   : 50 51
+OR                   : 89
+ORDER                : 57
+PRIMARY              : 30
+SELECT               : 42
+SET                  : 32
+SHOW                 : 13
+STRING               : 68
+SUM                  : 73
+TABLE                : 15 16
+TIMESTAMP            : 22
+UPDATE               : 32
+USE                  : 14
+VALUES               : 31
+VARCHAR              : 21
+WHERE                : 53
 error                : 
 
 Nonterminals, with rules where they appear:
 
-alias_column         : 53 54
-alias_columns        : 47 54
-column               : 13 15 16
-column_list          : 13 16
-columns              : 12
-condition            : 64 65 66 72
-conditional_select   : 39
-conditions           : 51 64 65
-constraint           : 25 26
-constraints          : 17 26
-create_database      : 7
+assignment_list      : 32 41
+column_def           : 17 18
+column_defs          : 15 18
+constraint           : 27 28
+create_database      : 10
 create_table         : 6
-data                 : 34 35 48 48 49 50 50 55 56 62 62 67 67 68 68 68 69 69 69 69 70 71 72 72
-data_columns         : 29 43 44 45 46 56
-data_type            : 17
-datas                : 32 33 35
-delete_data          : 1
-from_clause          : 42 43 44 45 46
-from_clause_with_alias : 47
-insert_clause        : 29
-insert_data          : 3
-join_clause          : 47
-join_select          : 37
-order_by_clause      : 46
-order_clause         : 52
-ordered_select       : 38
-qualified_data       : 57
-select_all           : 41
-select_data          : 2 31 50
-show_databases       : 5
-simple_select        : 40
+data_type            : 19
+delete_data          : 2
+drop_database        : 9
+drop_table           : 5
+expr                 : 40 41 50 51 53 66 67 71 72 73 74 75 77 78 78 79 79 80 80 81 81 82 82 83 83 84 84 85 85 86 86 87 87 88 88 89 89 90 90
+expr_list            : 38 39 43 67
+ident_list           : 31 35
+identifier_ref       : 36 37 60 61 62 63 64 65 70
+insert_data          : 4
+opt_constraints      : 19 28
+opt_group_by         : 42
+opt_join             : 42 50 51
+opt_limit            : 42
+opt_order_by         : 42
+opt_where            : 32 33 42
+order_list           : 57 63 64 65
+ref_list             : 37 55
+select_data          : 1
+select_list          : 42
+show_databases       : 8
 statement            : 0
-subquery_select      : 36
-use_database         : 4
-values_clause        : 30 33
-where_clause         : 45
-where_in_clause      : 44
+table_ref            : 48 50 51
+table_source         : 42
+update_data          : 3
+use_database         : 7
+values_list          : 31 39
 
 
 state 0
 
     (0) S' -> . statement
-    (1) statement -> . delete_data
-    (2) statement -> . select_data
-    (3) statement -> . insert_data
-    (4) statement -> . use_database
-    (5) statement -> . show_databases
+    (1) statement -> . select_data
+    (2) statement -> . delete_data
+    (3) statement -> . update_data
+    (4) statement -> . insert_data
+    (5) statement -> . drop_table
     (6) statement -> . create_table
-    (7) statement -> . create_database
-    (8) delete_data -> . DELETE FROM IDENTIFIER
-    (36) select_data -> . subquery_select
-    (37) select_data -> . join_select
-    (38) select_data -> . ordered_select
-    (39) select_data -> . conditional_select
-    (40) select_data -> . simple_select
-    (41) select_data -> . select_all
-    (29) insert_data -> . INSERT INTO IDENTIFIER ( data_columns ) insert_clause
-    (9) use_database -> . USE IDENTIFIER
-    (10) show_databases -> . SHOW DATABASES
-    (12) create_table -> . CREATE TABLE IDENTIFIER ( columns )
+    (7) statement -> . use_database
+    (8) statement -> . show_databases
+    (9) statement -> . drop_database
+    (10) statement -> . create_database
+    (42) select_data -> . SELECT select_list FROM table_source opt_join opt_where opt_group_by opt_order_by opt_limit
+    (33) delete_data -> . DELETE FROM IDENTIFIER opt_where
+    (32) update_data -> . UPDATE IDENTIFIER SET assignment_list opt_where
+    (31) insert_data -> . INSERT INTO IDENTIFIER ( ident_list ) VALUES values_list
+    (16) drop_table -> . DROP TABLE IDENTIFIER
+    (15) create_table -> . CREATE TABLE IDENTIFIER ( column_defs )
+    (14) use_database -> . USE IDENTIFIER
+    (13) show_databases -> . SHOW DATABASES
+    (12) drop_database -> . DROP DATABASE IDENTIFIER
     (11) create_database -> . CREATE DATABASE IDENTIFIER
-    (44) subquery_select -> . SELECT data_columns from_clause where_in_clause
-    (47) join_select -> . SELECT alias_columns from_clause_with_alias join_clause
-    (46) ordered_select -> . SELECT data_columns from_clause order_by_clause
-    (45) conditional_select -> . SELECT data_columns from_clause where_clause
-    (43) simple_select -> . SELECT data_columns from_clause
-    (42) select_all -> . SELECT * from_clause
-    DELETE          shift and go to state 9
-    INSERT          shift and go to state 16
-    USE             shift and go to state 17
-    SHOW            shift and go to state 18
-    CREATE          shift and go to state 19
-    SELECT          shift and go to state 20
+    SELECT          shift and go to state 12
+    DELETE          shift and go to state 13
+    UPDATE          shift and go to state 14
+    INSERT          shift and go to state 15
+    DROP            shift and go to state 16
+    CREATE          shift and go to state 17
+    USE             shift and go to state 18
+    SHOW            shift and go to state 19
 
     statement                      shift and go to state 1
-    delete_data                    shift and go to state 2
-    select_data                    shift and go to state 3
-    insert_data                    shift and go to state 4
-    use_database                   shift and go to state 5
-    show_databases                 shift and go to state 6
+    select_data                    shift and go to state 2
+    delete_data                    shift and go to state 3
+    update_data                    shift and go to state 4
+    insert_data                    shift and go to state 5
+    drop_table                     shift and go to state 6
     create_table                   shift and go to state 7
-    create_database                shift and go to state 8
-    subquery_select                shift and go to state 10
-    join_select                    shift and go to state 11
-    ordered_select                 shift and go to state 12
-    conditional_select             shift and go to state 13
-    simple_select                  shift and go to state 14
-    select_all                     shift and go to state 15
+    use_database                   shift and go to state 8
+    show_databases                 shift and go to state 9
+    drop_database                  shift and go to state 10
+    create_database                shift and go to state 11
 
 state 1
 
@@ -214,32 +251,32 @@ state 1
 
 state 2
 
-    (1) statement -> delete_data .
-    $end            reduce using rule 1 (statement -> delete_data .)
+    (1) statement -> select_data .
+    $end            reduce using rule 1 (statement -> select_data .)
 
 
 state 3
 
-    (2) statement -> select_data .
-    $end            reduce using rule 2 (statement -> select_data .)
+    (2) statement -> delete_data .
+    $end            reduce using rule 2 (statement -> delete_data .)
 
 
 state 4
 
-    (3) statement -> insert_data .
-    $end            reduce using rule 3 (statement -> insert_data .)
+    (3) statement -> update_data .
+    $end            reduce using rule 3 (statement -> update_data .)
 
 
 state 5
 
-    (4) statement -> use_database .
-    $end            reduce using rule 4 (statement -> use_database .)
+    (4) statement -> insert_data .
+    $end            reduce using rule 4 (statement -> insert_data .)
 
 
 state 6
 
-    (5) statement -> show_databases .
-    $end            reduce using rule 5 (statement -> show_databases .)
+    (5) statement -> drop_table .
+    $end            reduce using rule 5 (statement -> drop_table .)
 
 
 state 7
@@ -250,1343 +287,3452 @@ state 7
 
 state 8
 
-    (7) statement -> create_database .
-    $end            reduce using rule 7 (statement -> create_database .)
+    (7) statement -> use_database .
+    $end            reduce using rule 7 (statement -> use_database .)
 
 
 state 9
 
-    (8) delete_data -> DELETE . FROM IDENTIFIER
-    FROM            shift and go to state 21
+    (8) statement -> show_databases .
+    $end            reduce using rule 8 (statement -> show_databases .)
 
 
 state 10
 
-    (36) select_data -> subquery_select .
-    $end            reduce using rule 36 (select_data -> subquery_select .)
-    )               reduce using rule 36 (select_data -> subquery_select .)
+    (9) statement -> drop_database .
+    $end            reduce using rule 9 (statement -> drop_database .)
 
 
 state 11
 
-    (37) select_data -> join_select .
-    $end            reduce using rule 37 (select_data -> join_select .)
-    )               reduce using rule 37 (select_data -> join_select .)
+    (10) statement -> create_database .
+    $end            reduce using rule 10 (statement -> create_database .)
 
 
 state 12
 
-    (38) select_data -> ordered_select .
-    $end            reduce using rule 38 (select_data -> ordered_select .)
-    )               reduce using rule 38 (select_data -> ordered_select .)
+    (42) select_data -> SELECT . select_list FROM table_source opt_join opt_where opt_group_by opt_order_by opt_limit
+    (43) select_list -> . expr_list
+    (44) select_list -> . *
+    (66) expr_list -> . expr
+    (67) expr_list -> . expr_list , expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    *               shift and go to state 22
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
 
+    select_list                    shift and go to state 20
+    expr_list                      shift and go to state 21
+    expr                           shift and go to state 23
+    identifier_ref                 shift and go to state 26
 
 state 13
 
-    (39) select_data -> conditional_select .
-    $end            reduce using rule 39 (select_data -> conditional_select .)
-    )               reduce using rule 39 (select_data -> conditional_select .)
+    (33) delete_data -> DELETE . FROM IDENTIFIER opt_where
+    FROM            shift and go to state 34
 
 
 state 14
 
-    (40) select_data -> simple_select .
-    $end            reduce using rule 40 (select_data -> simple_select .)
-    )               reduce using rule 40 (select_data -> simple_select .)
+    (32) update_data -> UPDATE . IDENTIFIER SET assignment_list opt_where
+    IDENTIFIER      shift and go to state 35
 
 
 state 15
 
-    (41) select_data -> select_all .
-    $end            reduce using rule 41 (select_data -> select_all .)
-    )               reduce using rule 41 (select_data -> select_all .)
+    (31) insert_data -> INSERT . INTO IDENTIFIER ( ident_list ) VALUES values_list
+    INTO            shift and go to state 36
 
 
 state 16
 
-    (29) insert_data -> INSERT . INTO IDENTIFIER ( data_columns ) insert_clause
-    INTO            shift and go to state 22
+    (16) drop_table -> DROP . TABLE IDENTIFIER
+    (12) drop_database -> DROP . DATABASE IDENTIFIER
+    TABLE           shift and go to state 37
+    DATABASE        shift and go to state 38
 
 
 state 17
 
-    (9) use_database -> USE . IDENTIFIER
-    IDENTIFIER      shift and go to state 23
+    (15) create_table -> CREATE . TABLE IDENTIFIER ( column_defs )
+    (11) create_database -> CREATE . DATABASE IDENTIFIER
+    TABLE           shift and go to state 39
+    DATABASE        shift and go to state 40
 
 
 state 18
 
-    (10) show_databases -> SHOW . DATABASES
-    DATABASES       shift and go to state 24
+    (14) use_database -> USE . IDENTIFIER
+    IDENTIFIER      shift and go to state 41
 
 
 state 19
 
-    (12) create_table -> CREATE . TABLE IDENTIFIER ( columns )
-    (11) create_database -> CREATE . DATABASE IDENTIFIER
-    TABLE           shift and go to state 25
-    DATABASE        shift and go to state 26
+    (13) show_databases -> SHOW . DATABASES
+    DATABASES       shift and go to state 42
 
 
 state 20
 
-    (44) subquery_select -> SELECT . data_columns from_clause where_in_clause
-    (47) join_select -> SELECT . alias_columns from_clause_with_alias join_clause
-    (46) ordered_select -> SELECT . data_columns from_clause order_by_clause
-    (45) conditional_select -> SELECT . data_columns from_clause where_clause
-    (43) simple_select -> SELECT . data_columns from_clause
-    (42) select_all -> SELECT . * from_clause
-    (55) data_columns -> . data
-    (56) data_columns -> . data , data_columns
-    (53) alias_columns -> . alias_column
-    (54) alias_columns -> . alias_column , alias_columns
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    (57) alias_column -> . qualified_data
-    (62) qualified_data -> . data . data
-    *               shift and go to state 29
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (42) select_data -> SELECT select_list . FROM table_source opt_join opt_where opt_group_by opt_order_by opt_limit
+    FROM            shift and go to state 43
 
-    data_columns                   shift and go to state 27
-    alias_columns                  shift and go to state 28
-    data                           shift and go to state 30
-    alias_column                   shift and go to state 31
-    qualified_data                 shift and go to state 35
 
 state 21
 
-    (8) delete_data -> DELETE FROM . IDENTIFIER
-    IDENTIFIER      shift and go to state 36
+    (43) select_list -> expr_list .
+    (67) expr_list -> expr_list . , expr
+    FROM            reduce using rule 43 (select_list -> expr_list .)
+    ,               shift and go to state 44
 
 
 state 22
 
-    (29) insert_data -> INSERT INTO . IDENTIFIER ( data_columns ) insert_clause
-    IDENTIFIER      shift and go to state 37
+    (44) select_list -> * .
+    FROM            reduce using rule 44 (select_list -> * .)
 
 
 state 23
 
-    (9) use_database -> USE IDENTIFIER .
-    $end            reduce using rule 9 (use_database -> USE IDENTIFIER .)
+    (66) expr_list -> expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    ,               reduce using rule 66 (expr_list -> expr .)
+    FROM            reduce using rule 66 (expr_list -> expr .)
+    )               reduce using rule 66 (expr_list -> expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
 
 state 24
 
-    (10) show_databases -> SHOW DATABASES .
-    $end            reduce using rule 10 (show_databases -> SHOW DATABASES .)
+    (68) expr -> STRING .
+    /               reduce using rule 68 (expr -> STRING .)
+    *               reduce using rule 68 (expr -> STRING .)
+    -               reduce using rule 68 (expr -> STRING .)
+    +               reduce using rule 68 (expr -> STRING .)
+    LIKE            reduce using rule 68 (expr -> STRING .)
+    NEQ             reduce using rule 68 (expr -> STRING .)
+    GTE             reduce using rule 68 (expr -> STRING .)
+    LTE             reduce using rule 68 (expr -> STRING .)
+    <               reduce using rule 68 (expr -> STRING .)
+    >               reduce using rule 68 (expr -> STRING .)
+    =               reduce using rule 68 (expr -> STRING .)
+    OR              reduce using rule 68 (expr -> STRING .)
+    AND             reduce using rule 68 (expr -> STRING .)
+    ,               reduce using rule 68 (expr -> STRING .)
+    FROM            reduce using rule 68 (expr -> STRING .)
+    )               reduce using rule 68 (expr -> STRING .)
+    $end            reduce using rule 68 (expr -> STRING .)
+    GROUP           reduce using rule 68 (expr -> STRING .)
+    ORDER           reduce using rule 68 (expr -> STRING .)
+    LIMIT           reduce using rule 68 (expr -> STRING .)
+    WHERE           reduce using rule 68 (expr -> STRING .)
+    LEFT            reduce using rule 68 (expr -> STRING .)
+    JOIN            reduce using rule 68 (expr -> STRING .)
 
 
 state 25
 
-    (12) create_table -> CREATE TABLE . IDENTIFIER ( columns )
-    IDENTIFIER      shift and go to state 38
+    (69) expr -> NUMBER .
+    /               reduce using rule 69 (expr -> NUMBER .)
+    *               reduce using rule 69 (expr -> NUMBER .)
+    -               reduce using rule 69 (expr -> NUMBER .)
+    +               reduce using rule 69 (expr -> NUMBER .)
+    LIKE            reduce using rule 69 (expr -> NUMBER .)
+    NEQ             reduce using rule 69 (expr -> NUMBER .)
+    GTE             reduce using rule 69 (expr -> NUMBER .)
+    LTE             reduce using rule 69 (expr -> NUMBER .)
+    <               reduce using rule 69 (expr -> NUMBER .)
+    >               reduce using rule 69 (expr -> NUMBER .)
+    =               reduce using rule 69 (expr -> NUMBER .)
+    OR              reduce using rule 69 (expr -> NUMBER .)
+    AND             reduce using rule 69 (expr -> NUMBER .)
+    ,               reduce using rule 69 (expr -> NUMBER .)
+    FROM            reduce using rule 69 (expr -> NUMBER .)
+    )               reduce using rule 69 (expr -> NUMBER .)
+    $end            reduce using rule 69 (expr -> NUMBER .)
+    GROUP           reduce using rule 69 (expr -> NUMBER .)
+    ORDER           reduce using rule 69 (expr -> NUMBER .)
+    LIMIT           reduce using rule 69 (expr -> NUMBER .)
+    WHERE           reduce using rule 69 (expr -> NUMBER .)
+    LEFT            reduce using rule 69 (expr -> NUMBER .)
+    JOIN            reduce using rule 69 (expr -> NUMBER .)
 
 
 state 26
 
-    (11) create_database -> CREATE DATABASE . IDENTIFIER
-    IDENTIFIER      shift and go to state 39
+    (70) expr -> identifier_ref .
+    /               reduce using rule 70 (expr -> identifier_ref .)
+    *               reduce using rule 70 (expr -> identifier_ref .)
+    -               reduce using rule 70 (expr -> identifier_ref .)
+    +               reduce using rule 70 (expr -> identifier_ref .)
+    LIKE            reduce using rule 70 (expr -> identifier_ref .)
+    NEQ             reduce using rule 70 (expr -> identifier_ref .)
+    GTE             reduce using rule 70 (expr -> identifier_ref .)
+    LTE             reduce using rule 70 (expr -> identifier_ref .)
+    <               reduce using rule 70 (expr -> identifier_ref .)
+    >               reduce using rule 70 (expr -> identifier_ref .)
+    =               reduce using rule 70 (expr -> identifier_ref .)
+    OR              reduce using rule 70 (expr -> identifier_ref .)
+    AND             reduce using rule 70 (expr -> identifier_ref .)
+    ,               reduce using rule 70 (expr -> identifier_ref .)
+    FROM            reduce using rule 70 (expr -> identifier_ref .)
+    )               reduce using rule 70 (expr -> identifier_ref .)
+    $end            reduce using rule 70 (expr -> identifier_ref .)
+    GROUP           reduce using rule 70 (expr -> identifier_ref .)
+    ORDER           reduce using rule 70 (expr -> identifier_ref .)
+    LIMIT           reduce using rule 70 (expr -> identifier_ref .)
+    WHERE           reduce using rule 70 (expr -> identifier_ref .)
+    LEFT            reduce using rule 70 (expr -> identifier_ref .)
+    JOIN            reduce using rule 70 (expr -> identifier_ref .)
 
 
 state 27
 
-    (44) subquery_select -> SELECT data_columns . from_clause where_in_clause
-    (46) ordered_select -> SELECT data_columns . from_clause order_by_clause
-    (45) conditional_select -> SELECT data_columns . from_clause where_clause
-    (43) simple_select -> SELECT data_columns . from_clause
-    (49) from_clause -> . FROM data
-    FROM            shift and go to state 41
+    (71) expr -> MIN . ( expr )
+    (               shift and go to state 58
 
-    from_clause                    shift and go to state 40
 
 state 28
 
-    (47) join_select -> SELECT alias_columns . from_clause_with_alias join_clause
-    (48) from_clause_with_alias -> . FROM data data
-    FROM            shift and go to state 43
+    (77) expr -> ( . expr )
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
 
-    from_clause_with_alias         shift and go to state 42
+    expr                           shift and go to state 59
+    identifier_ref                 shift and go to state 26
 
 state 29
 
-    (42) select_all -> SELECT * . from_clause
-    (49) from_clause -> . FROM data
-    FROM            shift and go to state 41
+    (72) expr -> MAX . ( expr )
+    (               shift and go to state 60
 
-    from_clause                    shift and go to state 44
 
 state 30
 
-    (55) data_columns -> data .
-    (56) data_columns -> data . , data_columns
-    (62) qualified_data -> data . . data
-    FROM            reduce using rule 55 (data_columns -> data .)
-    ,               shift and go to state 45
-    .               shift and go to state 46
+    (73) expr -> SUM . ( expr )
+    (               shift and go to state 61
 
 
 state 31
 
-    (53) alias_columns -> alias_column .
-    (54) alias_columns -> alias_column . , alias_columns
-    FROM            reduce using rule 53 (alias_columns -> alias_column .)
-    ,               shift and go to state 47
+    (74) expr -> COUNT . ( expr )
+    (76) expr -> COUNT . ( * )
+    (               shift and go to state 62
 
 
 state 32
 
-    (58) data -> NUMBER .
-    ,               reduce using rule 58 (data -> NUMBER .)
-    .               reduce using rule 58 (data -> NUMBER .)
-    FROM            reduce using rule 58 (data -> NUMBER .)
-    WHERE           reduce using rule 58 (data -> NUMBER .)
-    ORDER_BY        reduce using rule 58 (data -> NUMBER .)
-    $end            reduce using rule 58 (data -> NUMBER .)
-    )               reduce using rule 58 (data -> NUMBER .)
-    NUMBER          reduce using rule 58 (data -> NUMBER .)
-    IDENTIFIER      reduce using rule 58 (data -> NUMBER .)
-    '               reduce using rule 58 (data -> NUMBER .)
-    OPERATOR        reduce using rule 58 (data -> NUMBER .)
-    DESC            reduce using rule 58 (data -> NUMBER .)
-    ASC             reduce using rule 58 (data -> NUMBER .)
-    JOIN            reduce using rule 58 (data -> NUMBER .)
-    IN              reduce using rule 58 (data -> NUMBER .)
-    OR              reduce using rule 58 (data -> NUMBER .)
-    AND             reduce using rule 58 (data -> NUMBER .)
-    ON              reduce using rule 58 (data -> NUMBER .)
+    (75) expr -> AVG . ( expr )
+    (               shift and go to state 63
 
 
 state 33
 
-    (59) data -> IDENTIFIER .
-    ,               reduce using rule 59 (data -> IDENTIFIER .)
-    .               reduce using rule 59 (data -> IDENTIFIER .)
-    FROM            reduce using rule 59 (data -> IDENTIFIER .)
-    WHERE           reduce using rule 59 (data -> IDENTIFIER .)
-    ORDER_BY        reduce using rule 59 (data -> IDENTIFIER .)
-    $end            reduce using rule 59 (data -> IDENTIFIER .)
-    )               reduce using rule 59 (data -> IDENTIFIER .)
-    NUMBER          reduce using rule 59 (data -> IDENTIFIER .)
-    IDENTIFIER      reduce using rule 59 (data -> IDENTIFIER .)
-    '               reduce using rule 59 (data -> IDENTIFIER .)
-    OPERATOR        reduce using rule 59 (data -> IDENTIFIER .)
-    DESC            reduce using rule 59 (data -> IDENTIFIER .)
-    ASC             reduce using rule 59 (data -> IDENTIFIER .)
-    JOIN            reduce using rule 59 (data -> IDENTIFIER .)
-    IN              reduce using rule 59 (data -> IDENTIFIER .)
-    OR              reduce using rule 59 (data -> IDENTIFIER .)
-    AND             reduce using rule 59 (data -> IDENTIFIER .)
-    ON              reduce using rule 59 (data -> IDENTIFIER .)
+    (91) identifier_ref -> IDENTIFIER .
+    (92) identifier_ref -> IDENTIFIER . . IDENTIFIER
+    /               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    *               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    -               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    +               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    LIKE            reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    NEQ             reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    GTE             reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    LTE             reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    <               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    >               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    =               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    OR              reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    AND             reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    ,               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    FROM            reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    )               reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    $end            reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    GROUP           reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    ORDER           reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    LIMIT           reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    WHERE           reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    LEFT            reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    JOIN            reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    DESC            reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    ASC             reduce using rule 91 (identifier_ref -> IDENTIFIER .)
+    .               shift and go to state 64
 
 
 state 34
 
-    (60) data -> ' . IDENTIFIER '
-    (61) data -> ' . IDENTIFIER IDENTIFIER '
-    IDENTIFIER      shift and go to state 48
+    (33) delete_data -> DELETE FROM . IDENTIFIER opt_where
+    IDENTIFIER      shift and go to state 65
 
 
 state 35
 
-    (57) alias_column -> qualified_data .
-    ,               reduce using rule 57 (alias_column -> qualified_data .)
-    FROM            reduce using rule 57 (alias_column -> qualified_data .)
+    (32) update_data -> UPDATE IDENTIFIER . SET assignment_list opt_where
+    SET             shift and go to state 66
 
 
 state 36
 
-    (8) delete_data -> DELETE FROM IDENTIFIER .
-    $end            reduce using rule 8 (delete_data -> DELETE FROM IDENTIFIER .)
+    (31) insert_data -> INSERT INTO . IDENTIFIER ( ident_list ) VALUES values_list
+    IDENTIFIER      shift and go to state 67
 
 
 state 37
 
-    (29) insert_data -> INSERT INTO IDENTIFIER . ( data_columns ) insert_clause
-    (               shift and go to state 49
+    (16) drop_table -> DROP TABLE . IDENTIFIER
+    IDENTIFIER      shift and go to state 68
 
 
 state 38
 
-    (12) create_table -> CREATE TABLE IDENTIFIER . ( columns )
-    (               shift and go to state 50
+    (12) drop_database -> DROP DATABASE . IDENTIFIER
+    IDENTIFIER      shift and go to state 69
 
 
 state 39
+
+    (15) create_table -> CREATE TABLE . IDENTIFIER ( column_defs )
+    IDENTIFIER      shift and go to state 70
+
+
+state 40
+
+    (11) create_database -> CREATE DATABASE . IDENTIFIER
+    IDENTIFIER      shift and go to state 71
+
+
+state 41
+
+    (14) use_database -> USE IDENTIFIER .
+    $end            reduce using rule 14 (use_database -> USE IDENTIFIER .)
+
+
+state 42
+
+    (13) show_databases -> SHOW DATABASES .
+    $end            reduce using rule 13 (show_databases -> SHOW DATABASES .)
+
+
+state 43
+
+    (42) select_data -> SELECT select_list FROM . table_source opt_join opt_where opt_group_by opt_order_by opt_limit
+    (48) table_source -> . table_ref
+    (45) table_ref -> . IDENTIFIER
+    (46) table_ref -> . IDENTIFIER AS IDENTIFIER
+    (47) table_ref -> . IDENTIFIER IDENTIFIER
+    IDENTIFIER      shift and go to state 74
+
+    table_source                   shift and go to state 72
+    table_ref                      shift and go to state 73
+
+state 44
+
+    (67) expr_list -> expr_list , . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 75
+    identifier_ref                 shift and go to state 26
+
+state 45
+
+    (78) expr -> expr / . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 76
+    identifier_ref                 shift and go to state 26
+
+state 46
+
+    (79) expr -> expr * . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 77
+    identifier_ref                 shift and go to state 26
+
+state 47
+
+    (80) expr -> expr - . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 78
+    identifier_ref                 shift and go to state 26
+
+state 48
+
+    (81) expr -> expr + . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 79
+    identifier_ref                 shift and go to state 26
+
+state 49
+
+    (82) expr -> expr LIKE . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 80
+    identifier_ref                 shift and go to state 26
+
+state 50
+
+    (83) expr -> expr NEQ . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 81
+    identifier_ref                 shift and go to state 26
+
+state 51
+
+    (84) expr -> expr GTE . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 82
+    identifier_ref                 shift and go to state 26
+
+state 52
+
+    (85) expr -> expr LTE . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 83
+    identifier_ref                 shift and go to state 26
+
+state 53
+
+    (86) expr -> expr < . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 84
+    identifier_ref                 shift and go to state 26
+
+state 54
+
+    (87) expr -> expr > . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 85
+    identifier_ref                 shift and go to state 26
+
+state 55
+
+    (88) expr -> expr = . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 86
+    identifier_ref                 shift and go to state 26
+
+state 56
+
+    (89) expr -> expr OR . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 87
+    identifier_ref                 shift and go to state 26
+
+state 57
+
+    (90) expr -> expr AND . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 88
+    identifier_ref                 shift and go to state 26
+
+state 58
+
+    (71) expr -> MIN ( . expr )
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 89
+    identifier_ref                 shift and go to state 26
+
+state 59
+
+    (77) expr -> ( expr . )
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    )               shift and go to state 90
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
+
+
+state 60
+
+    (72) expr -> MAX ( . expr )
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 91
+    identifier_ref                 shift and go to state 26
+
+state 61
+
+    (73) expr -> SUM ( . expr )
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 92
+    identifier_ref                 shift and go to state 26
+
+state 62
+
+    (74) expr -> COUNT ( . expr )
+    (76) expr -> COUNT ( . * )
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    *               shift and go to state 94
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 93
+    identifier_ref                 shift and go to state 26
+
+state 63
+
+    (75) expr -> AVG ( . expr )
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 95
+    identifier_ref                 shift and go to state 26
+
+state 64
+
+    (92) identifier_ref -> IDENTIFIER . . IDENTIFIER
+    IDENTIFIER      shift and go to state 96
+
+
+state 65
+
+    (33) delete_data -> DELETE FROM IDENTIFIER . opt_where
+    (52) opt_where -> .
+    (53) opt_where -> . WHERE expr
+    $end            reduce using rule 52 (opt_where -> .)
+    WHERE           shift and go to state 98
+
+    opt_where                      shift and go to state 97
+
+state 66
+
+    (32) update_data -> UPDATE IDENTIFIER SET . assignment_list opt_where
+    (40) assignment_list -> . IDENTIFIER = expr
+    (41) assignment_list -> . assignment_list , IDENTIFIER = expr
+    IDENTIFIER      shift and go to state 99
+
+    assignment_list                shift and go to state 100
+
+state 67
+
+    (31) insert_data -> INSERT INTO IDENTIFIER . ( ident_list ) VALUES values_list
+    (               shift and go to state 101
+
+
+state 68
+
+    (16) drop_table -> DROP TABLE IDENTIFIER .
+    $end            reduce using rule 16 (drop_table -> DROP TABLE IDENTIFIER .)
+
+
+state 69
+
+    (12) drop_database -> DROP DATABASE IDENTIFIER .
+    $end            reduce using rule 12 (drop_database -> DROP DATABASE IDENTIFIER .)
+
+
+state 70
+
+    (15) create_table -> CREATE TABLE IDENTIFIER . ( column_defs )
+    (               shift and go to state 102
+
+
+state 71
 
     (11) create_database -> CREATE DATABASE IDENTIFIER .
     $end            reduce using rule 11 (create_database -> CREATE DATABASE IDENTIFIER .)
 
 
-state 40
-
-    (44) subquery_select -> SELECT data_columns from_clause . where_in_clause
-    (46) ordered_select -> SELECT data_columns from_clause . order_by_clause
-    (45) conditional_select -> SELECT data_columns from_clause . where_clause
-    (43) simple_select -> SELECT data_columns from_clause .
-    (50) where_in_clause -> . WHERE data . data IN ( select_data )
-    (52) order_by_clause -> . ORDER_BY order_clause
-    (51) where_clause -> . WHERE conditions
-    $end            reduce using rule 43 (simple_select -> SELECT data_columns from_clause .)
-    )               reduce using rule 43 (simple_select -> SELECT data_columns from_clause .)
-    WHERE           shift and go to state 54
-    ORDER_BY        shift and go to state 55
-
-    where_in_clause                shift and go to state 51
-    order_by_clause                shift and go to state 52
-    where_clause                   shift and go to state 53
-
-state 41
-
-    (49) from_clause -> FROM . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    data                           shift and go to state 56
-
-state 42
-
-    (47) join_select -> SELECT alias_columns from_clause_with_alias . join_clause
-    (72) join_clause -> . JOIN data . data ON condition
-    JOIN            shift and go to state 58
-
-    join_clause                    shift and go to state 57
-
-state 43
-
-    (48) from_clause_with_alias -> FROM . data data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    data                           shift and go to state 59
-
-state 44
-
-    (42) select_all -> SELECT * from_clause .
-    $end            reduce using rule 42 (select_all -> SELECT * from_clause .)
-    )               reduce using rule 42 (select_all -> SELECT * from_clause .)
-
-
-state 45
-
-    (56) data_columns -> data , . data_columns
-    (55) data_columns -> . data
-    (56) data_columns -> . data , data_columns
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    data                           shift and go to state 60
-    data_columns                   shift and go to state 61
-
-state 46
-
-    (62) qualified_data -> data . . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    data                           shift and go to state 62
-
-state 47
-
-    (54) alias_columns -> alias_column , . alias_columns
-    (53) alias_columns -> . alias_column
-    (54) alias_columns -> . alias_column , alias_columns
-    (57) alias_column -> . qualified_data
-    (62) qualified_data -> . data . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    alias_column                   shift and go to state 31
-    alias_columns                  shift and go to state 63
-    qualified_data                 shift and go to state 35
-    data                           shift and go to state 64
-
-state 48
-
-    (60) data -> ' IDENTIFIER . '
-    (61) data -> ' IDENTIFIER . IDENTIFIER '
-    '               shift and go to state 65
-    IDENTIFIER      shift and go to state 66
-
-
-state 49
-
-    (29) insert_data -> INSERT INTO IDENTIFIER ( . data_columns ) insert_clause
-    (55) data_columns -> . data
-    (56) data_columns -> . data , data_columns
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    data_columns                   shift and go to state 67
-    data                           shift and go to state 60
-
-state 50
-
-    (12) create_table -> CREATE TABLE IDENTIFIER ( . columns )
-    (13) columns -> . column column_list
-    (17) column -> . IDENTIFIER data_type constraints
-    IDENTIFIER      shift and go to state 68
-
-    columns                        shift and go to state 69
-    column                         shift and go to state 70
-
-state 51
-
-    (44) subquery_select -> SELECT data_columns from_clause where_in_clause .
-    $end            reduce using rule 44 (subquery_select -> SELECT data_columns from_clause where_in_clause .)
-    )               reduce using rule 44 (subquery_select -> SELECT data_columns from_clause where_in_clause .)
-
-
-state 52
-
-    (46) ordered_select -> SELECT data_columns from_clause order_by_clause .
-    $end            reduce using rule 46 (ordered_select -> SELECT data_columns from_clause order_by_clause .)
-    )               reduce using rule 46 (ordered_select -> SELECT data_columns from_clause order_by_clause .)
-
-
-state 53
-
-    (45) conditional_select -> SELECT data_columns from_clause where_clause .
-    $end            reduce using rule 45 (conditional_select -> SELECT data_columns from_clause where_clause .)
-    )               reduce using rule 45 (conditional_select -> SELECT data_columns from_clause where_clause .)
-
-
-state 54
-
-    (50) where_in_clause -> WHERE . data . data IN ( select_data )
-    (51) where_clause -> WHERE . conditions
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    (63) conditions -> .
-    (64) conditions -> . condition OR conditions
-    (65) conditions -> . condition AND conditions
-    (66) conditions -> . condition
-    (67) condition -> . data OPERATOR data
-    (68) condition -> . data . data OPERATOR data
-    (69) condition -> . data . data OPERATOR data . data
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-    $end            reduce using rule 63 (conditions -> .)
-    )               reduce using rule 63 (conditions -> .)
-
-    data                           shift and go to state 71
-    conditions                     shift and go to state 72
-    condition                      shift and go to state 73
-
-state 55
-
-    (52) order_by_clause -> ORDER_BY . order_clause
-    (70) order_clause -> . data DESC
-    (71) order_clause -> . data ASC
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    order_clause                   shift and go to state 74
-    data                           shift and go to state 75
-
-state 56
-
-    (49) from_clause -> FROM data .
-    WHERE           reduce using rule 49 (from_clause -> FROM data .)
-    ORDER_BY        reduce using rule 49 (from_clause -> FROM data .)
-    $end            reduce using rule 49 (from_clause -> FROM data .)
-    )               reduce using rule 49 (from_clause -> FROM data .)
-
-
-state 57
-
-    (47) join_select -> SELECT alias_columns from_clause_with_alias join_clause .
-    $end            reduce using rule 47 (join_select -> SELECT alias_columns from_clause_with_alias join_clause .)
-    )               reduce using rule 47 (join_select -> SELECT alias_columns from_clause_with_alias join_clause .)
-
-
-state 58
-
-    (72) join_clause -> JOIN . data . data ON condition
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    data                           shift and go to state 76
-
-state 59
-
-    (48) from_clause_with_alias -> FROM data . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
-
-    data                           shift and go to state 77
-
-state 60
-
-    (55) data_columns -> data .
-    (56) data_columns -> data . , data_columns
-    FROM            reduce using rule 55 (data_columns -> data .)
-    )               reduce using rule 55 (data_columns -> data .)
-    ,               shift and go to state 45
-
-
-state 61
-
-    (56) data_columns -> data , data_columns .
-    FROM            reduce using rule 56 (data_columns -> data , data_columns .)
-    )               reduce using rule 56 (data_columns -> data , data_columns .)
-
-
-state 62
-
-    (62) qualified_data -> data . data .
-    ,               reduce using rule 62 (qualified_data -> data . data .)
-    FROM            reduce using rule 62 (qualified_data -> data . data .)
-
-
-state 63
-
-    (54) alias_columns -> alias_column , alias_columns .
-    FROM            reduce using rule 54 (alias_columns -> alias_column , alias_columns .)
-
-
-state 64
-
-    (62) qualified_data -> data . . data
-    .               shift and go to state 46
-
-
-state 65
-
-    (60) data -> ' IDENTIFIER ' .
-    ,               reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    .               reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    FROM            reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    WHERE           reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    ORDER_BY        reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    $end            reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    )               reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    NUMBER          reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    IDENTIFIER      reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    '               reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    OPERATOR        reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    DESC            reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    ASC             reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    JOIN            reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    IN              reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    OR              reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    AND             reduce using rule 60 (data -> ' IDENTIFIER ' .)
-    ON              reduce using rule 60 (data -> ' IDENTIFIER ' .)
-
-
-state 66
-
-    (61) data -> ' IDENTIFIER IDENTIFIER . '
-    '               shift and go to state 78
-
-
-state 67
-
-    (29) insert_data -> INSERT INTO IDENTIFIER ( data_columns . ) insert_clause
-    )               shift and go to state 79
-
-
-state 68
-
-    (17) column -> IDENTIFIER . data_type constraints
-    (18) data_type -> . DECIMAL ( NUMBER , NUMBER )
-    (19) data_type -> . VARCHAR ( NUMBER )
-    (20) data_type -> . DOUBLE
-    (21) data_type -> . TIMESTAMP
-    (22) data_type -> . FLOAT
-    (23) data_type -> . INT
-    DECIMAL         shift and go to state 81
-    VARCHAR         shift and go to state 82
-    DOUBLE          shift and go to state 83
-    TIMESTAMP       shift and go to state 84
-    FLOAT           shift and go to state 85
-    INT             shift and go to state 86
-
-    data_type                      shift and go to state 80
-
-state 69
-
-    (12) create_table -> CREATE TABLE IDENTIFIER ( columns . )
-    )               shift and go to state 87
-
-
-state 70
-
-    (13) columns -> column . column_list
-    (14) column_list -> .
-    (15) column_list -> . , column
-    (16) column_list -> . , column column_list
-    )               reduce using rule 14 (column_list -> .)
-    ,               shift and go to state 89
-
-    column_list                    shift and go to state 88
-
-state 71
-
-    (50) where_in_clause -> WHERE data . . data IN ( select_data )
-    (67) condition -> data . OPERATOR data
-    (68) condition -> data . . data OPERATOR data
-    (69) condition -> data . . data OPERATOR data . data
-    .               shift and go to state 90
-    OPERATOR        shift and go to state 91
-
-
 state 72
 
-    (51) where_clause -> WHERE conditions .
-    $end            reduce using rule 51 (where_clause -> WHERE conditions .)
-    )               reduce using rule 51 (where_clause -> WHERE conditions .)
+    (42) select_data -> SELECT select_list FROM table_source . opt_join opt_where opt_group_by opt_order_by opt_limit
+    (49) opt_join -> .
+    (50) opt_join -> . opt_join LEFT JOIN table_ref ON expr
+    (51) opt_join -> . opt_join JOIN table_ref ON expr
+    LEFT            reduce using rule 49 (opt_join -> .)
+    JOIN            reduce using rule 49 (opt_join -> .)
+    WHERE           reduce using rule 49 (opt_join -> .)
+    GROUP           reduce using rule 49 (opt_join -> .)
+    ORDER           reduce using rule 49 (opt_join -> .)
+    LIMIT           reduce using rule 49 (opt_join -> .)
+    $end            reduce using rule 49 (opt_join -> .)
 
+    opt_join                       shift and go to state 103
 
 state 73
 
-    (64) conditions -> condition . OR conditions
-    (65) conditions -> condition . AND conditions
-    (66) conditions -> condition .
-    OR              shift and go to state 92
-    AND             shift and go to state 93
-    $end            reduce using rule 66 (conditions -> condition .)
-    )               reduce using rule 66 (conditions -> condition .)
+    (48) table_source -> table_ref .
+    LEFT            reduce using rule 48 (table_source -> table_ref .)
+    JOIN            reduce using rule 48 (table_source -> table_ref .)
+    WHERE           reduce using rule 48 (table_source -> table_ref .)
+    GROUP           reduce using rule 48 (table_source -> table_ref .)
+    ORDER           reduce using rule 48 (table_source -> table_ref .)
+    LIMIT           reduce using rule 48 (table_source -> table_ref .)
+    $end            reduce using rule 48 (table_source -> table_ref .)
 
 
 state 74
 
-    (52) order_by_clause -> ORDER_BY order_clause .
-    $end            reduce using rule 52 (order_by_clause -> ORDER_BY order_clause .)
-    )               reduce using rule 52 (order_by_clause -> ORDER_BY order_clause .)
+    (45) table_ref -> IDENTIFIER .
+    (46) table_ref -> IDENTIFIER . AS IDENTIFIER
+    (47) table_ref -> IDENTIFIER . IDENTIFIER
+    LEFT            reduce using rule 45 (table_ref -> IDENTIFIER .)
+    JOIN            reduce using rule 45 (table_ref -> IDENTIFIER .)
+    WHERE           reduce using rule 45 (table_ref -> IDENTIFIER .)
+    GROUP           reduce using rule 45 (table_ref -> IDENTIFIER .)
+    ORDER           reduce using rule 45 (table_ref -> IDENTIFIER .)
+    LIMIT           reduce using rule 45 (table_ref -> IDENTIFIER .)
+    $end            reduce using rule 45 (table_ref -> IDENTIFIER .)
+    ON              reduce using rule 45 (table_ref -> IDENTIFIER .)
+    AS              shift and go to state 105
+    IDENTIFIER      shift and go to state 104
 
 
 state 75
 
-    (70) order_clause -> data . DESC
-    (71) order_clause -> data . ASC
-    DESC            shift and go to state 94
-    ASC             shift and go to state 95
+    (67) expr_list -> expr_list , expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    ,               reduce using rule 67 (expr_list -> expr_list , expr .)
+    FROM            reduce using rule 67 (expr_list -> expr_list , expr .)
+    )               reduce using rule 67 (expr_list -> expr_list , expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
 
 state 76
 
-    (72) join_clause -> JOIN data . . data ON condition
-    .               shift and go to state 96
+    (78) expr -> expr / expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    /               reduce using rule 78 (expr -> expr / expr .)
+    *               reduce using rule 78 (expr -> expr / expr .)
+    -               reduce using rule 78 (expr -> expr / expr .)
+    +               reduce using rule 78 (expr -> expr / expr .)
+    LIKE            reduce using rule 78 (expr -> expr / expr .)
+    NEQ             reduce using rule 78 (expr -> expr / expr .)
+    GTE             reduce using rule 78 (expr -> expr / expr .)
+    LTE             reduce using rule 78 (expr -> expr / expr .)
+    <               reduce using rule 78 (expr -> expr / expr .)
+    >               reduce using rule 78 (expr -> expr / expr .)
+    =               reduce using rule 78 (expr -> expr / expr .)
+    OR              reduce using rule 78 (expr -> expr / expr .)
+    AND             reduce using rule 78 (expr -> expr / expr .)
+    ,               reduce using rule 78 (expr -> expr / expr .)
+    FROM            reduce using rule 78 (expr -> expr / expr .)
+    )               reduce using rule 78 (expr -> expr / expr .)
+    $end            reduce using rule 78 (expr -> expr / expr .)
+    GROUP           reduce using rule 78 (expr -> expr / expr .)
+    ORDER           reduce using rule 78 (expr -> expr / expr .)
+    LIMIT           reduce using rule 78 (expr -> expr / expr .)
+    WHERE           reduce using rule 78 (expr -> expr / expr .)
+    LEFT            reduce using rule 78 (expr -> expr / expr .)
+    JOIN            reduce using rule 78 (expr -> expr / expr .)
 
 
 state 77
 
-    (48) from_clause_with_alias -> FROM data data .
-    JOIN            reduce using rule 48 (from_clause_with_alias -> FROM data data .)
+    (79) expr -> expr * expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    /               reduce using rule 79 (expr -> expr * expr .)
+    *               reduce using rule 79 (expr -> expr * expr .)
+    -               reduce using rule 79 (expr -> expr * expr .)
+    +               reduce using rule 79 (expr -> expr * expr .)
+    LIKE            reduce using rule 79 (expr -> expr * expr .)
+    NEQ             reduce using rule 79 (expr -> expr * expr .)
+    GTE             reduce using rule 79 (expr -> expr * expr .)
+    LTE             reduce using rule 79 (expr -> expr * expr .)
+    <               reduce using rule 79 (expr -> expr * expr .)
+    >               reduce using rule 79 (expr -> expr * expr .)
+    =               reduce using rule 79 (expr -> expr * expr .)
+    OR              reduce using rule 79 (expr -> expr * expr .)
+    AND             reduce using rule 79 (expr -> expr * expr .)
+    ,               reduce using rule 79 (expr -> expr * expr .)
+    FROM            reduce using rule 79 (expr -> expr * expr .)
+    )               reduce using rule 79 (expr -> expr * expr .)
+    $end            reduce using rule 79 (expr -> expr * expr .)
+    GROUP           reduce using rule 79 (expr -> expr * expr .)
+    ORDER           reduce using rule 79 (expr -> expr * expr .)
+    LIMIT           reduce using rule 79 (expr -> expr * expr .)
+    WHERE           reduce using rule 79 (expr -> expr * expr .)
+    LEFT            reduce using rule 79 (expr -> expr * expr .)
+    JOIN            reduce using rule 79 (expr -> expr * expr .)
 
 
 state 78
 
-    (61) data -> ' IDENTIFIER IDENTIFIER ' .
-    ,               reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    .               reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    FROM            reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    WHERE           reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    ORDER_BY        reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    $end            reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    )               reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    NUMBER          reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    IDENTIFIER      reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    '               reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    OPERATOR        reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    DESC            reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    ASC             reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    JOIN            reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    IN              reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    OR              reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    AND             reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
-    ON              reduce using rule 61 (data -> ' IDENTIFIER IDENTIFIER ' .)
+    (80) expr -> expr - expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    -               reduce using rule 80 (expr -> expr - expr .)
+    +               reduce using rule 80 (expr -> expr - expr .)
+    LIKE            reduce using rule 80 (expr -> expr - expr .)
+    NEQ             reduce using rule 80 (expr -> expr - expr .)
+    GTE             reduce using rule 80 (expr -> expr - expr .)
+    LTE             reduce using rule 80 (expr -> expr - expr .)
+    <               reduce using rule 80 (expr -> expr - expr .)
+    >               reduce using rule 80 (expr -> expr - expr .)
+    =               reduce using rule 80 (expr -> expr - expr .)
+    OR              reduce using rule 80 (expr -> expr - expr .)
+    AND             reduce using rule 80 (expr -> expr - expr .)
+    ,               reduce using rule 80 (expr -> expr - expr .)
+    FROM            reduce using rule 80 (expr -> expr - expr .)
+    )               reduce using rule 80 (expr -> expr - expr .)
+    $end            reduce using rule 80 (expr -> expr - expr .)
+    GROUP           reduce using rule 80 (expr -> expr - expr .)
+    ORDER           reduce using rule 80 (expr -> expr - expr .)
+    LIMIT           reduce using rule 80 (expr -> expr - expr .)
+    WHERE           reduce using rule 80 (expr -> expr - expr .)
+    LEFT            reduce using rule 80 (expr -> expr - expr .)
+    JOIN            reduce using rule 80 (expr -> expr - expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
 
 
 state 79
 
-    (29) insert_data -> INSERT INTO IDENTIFIER ( data_columns ) . insert_clause
-    (30) insert_clause -> . VALUES values_clause
-    (31) insert_clause -> . SELECT select_data
-    VALUES          shift and go to state 98
-    SELECT          shift and go to state 99
+    (81) expr -> expr + expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    -               reduce using rule 81 (expr -> expr + expr .)
+    +               reduce using rule 81 (expr -> expr + expr .)
+    LIKE            reduce using rule 81 (expr -> expr + expr .)
+    NEQ             reduce using rule 81 (expr -> expr + expr .)
+    GTE             reduce using rule 81 (expr -> expr + expr .)
+    LTE             reduce using rule 81 (expr -> expr + expr .)
+    <               reduce using rule 81 (expr -> expr + expr .)
+    >               reduce using rule 81 (expr -> expr + expr .)
+    =               reduce using rule 81 (expr -> expr + expr .)
+    OR              reduce using rule 81 (expr -> expr + expr .)
+    AND             reduce using rule 81 (expr -> expr + expr .)
+    ,               reduce using rule 81 (expr -> expr + expr .)
+    FROM            reduce using rule 81 (expr -> expr + expr .)
+    )               reduce using rule 81 (expr -> expr + expr .)
+    $end            reduce using rule 81 (expr -> expr + expr .)
+    GROUP           reduce using rule 81 (expr -> expr + expr .)
+    ORDER           reduce using rule 81 (expr -> expr + expr .)
+    LIMIT           reduce using rule 81 (expr -> expr + expr .)
+    WHERE           reduce using rule 81 (expr -> expr + expr .)
+    LEFT            reduce using rule 81 (expr -> expr + expr .)
+    JOIN            reduce using rule 81 (expr -> expr + expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
 
-    insert_clause                  shift and go to state 97
 
 state 80
 
-    (17) column -> IDENTIFIER data_type . constraints
-    (24) constraints -> .
-    (25) constraints -> . constraint
-    (26) constraints -> . constraint constraints
-    (27) constraint -> . NOT_NULL
-    (28) constraint -> . PRIMARY_KEY
-    ,               reduce using rule 24 (constraints -> .)
-    )               reduce using rule 24 (constraints -> .)
-    NOT_NULL        shift and go to state 102
-    PRIMARY_KEY     shift and go to state 103
+    (82) expr -> expr LIKE expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LIKE            reduce using rule 82 (expr -> expr LIKE expr .)
+    NEQ             reduce using rule 82 (expr -> expr LIKE expr .)
+    GTE             reduce using rule 82 (expr -> expr LIKE expr .)
+    LTE             reduce using rule 82 (expr -> expr LIKE expr .)
+    <               reduce using rule 82 (expr -> expr LIKE expr .)
+    >               reduce using rule 82 (expr -> expr LIKE expr .)
+    =               reduce using rule 82 (expr -> expr LIKE expr .)
+    OR              reduce using rule 82 (expr -> expr LIKE expr .)
+    AND             reduce using rule 82 (expr -> expr LIKE expr .)
+    ,               reduce using rule 82 (expr -> expr LIKE expr .)
+    FROM            reduce using rule 82 (expr -> expr LIKE expr .)
+    )               reduce using rule 82 (expr -> expr LIKE expr .)
+    $end            reduce using rule 82 (expr -> expr LIKE expr .)
+    GROUP           reduce using rule 82 (expr -> expr LIKE expr .)
+    ORDER           reduce using rule 82 (expr -> expr LIKE expr .)
+    LIMIT           reduce using rule 82 (expr -> expr LIKE expr .)
+    WHERE           reduce using rule 82 (expr -> expr LIKE expr .)
+    LEFT            reduce using rule 82 (expr -> expr LIKE expr .)
+    JOIN            reduce using rule 82 (expr -> expr LIKE expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
 
-    constraints                    shift and go to state 100
-    constraint                     shift and go to state 101
 
 state 81
 
-    (18) data_type -> DECIMAL . ( NUMBER , NUMBER )
-    (               shift and go to state 104
+    (83) expr -> expr NEQ expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LIKE            reduce using rule 83 (expr -> expr NEQ expr .)
+    NEQ             reduce using rule 83 (expr -> expr NEQ expr .)
+    GTE             reduce using rule 83 (expr -> expr NEQ expr .)
+    LTE             reduce using rule 83 (expr -> expr NEQ expr .)
+    <               reduce using rule 83 (expr -> expr NEQ expr .)
+    >               reduce using rule 83 (expr -> expr NEQ expr .)
+    =               reduce using rule 83 (expr -> expr NEQ expr .)
+    OR              reduce using rule 83 (expr -> expr NEQ expr .)
+    AND             reduce using rule 83 (expr -> expr NEQ expr .)
+    ,               reduce using rule 83 (expr -> expr NEQ expr .)
+    FROM            reduce using rule 83 (expr -> expr NEQ expr .)
+    )               reduce using rule 83 (expr -> expr NEQ expr .)
+    $end            reduce using rule 83 (expr -> expr NEQ expr .)
+    GROUP           reduce using rule 83 (expr -> expr NEQ expr .)
+    ORDER           reduce using rule 83 (expr -> expr NEQ expr .)
+    LIMIT           reduce using rule 83 (expr -> expr NEQ expr .)
+    WHERE           reduce using rule 83 (expr -> expr NEQ expr .)
+    LEFT            reduce using rule 83 (expr -> expr NEQ expr .)
+    JOIN            reduce using rule 83 (expr -> expr NEQ expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
 
 
 state 82
 
-    (19) data_type -> VARCHAR . ( NUMBER )
-    (               shift and go to state 105
+    (84) expr -> expr GTE expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LIKE            reduce using rule 84 (expr -> expr GTE expr .)
+    NEQ             reduce using rule 84 (expr -> expr GTE expr .)
+    GTE             reduce using rule 84 (expr -> expr GTE expr .)
+    LTE             reduce using rule 84 (expr -> expr GTE expr .)
+    <               reduce using rule 84 (expr -> expr GTE expr .)
+    >               reduce using rule 84 (expr -> expr GTE expr .)
+    =               reduce using rule 84 (expr -> expr GTE expr .)
+    OR              reduce using rule 84 (expr -> expr GTE expr .)
+    AND             reduce using rule 84 (expr -> expr GTE expr .)
+    ,               reduce using rule 84 (expr -> expr GTE expr .)
+    FROM            reduce using rule 84 (expr -> expr GTE expr .)
+    )               reduce using rule 84 (expr -> expr GTE expr .)
+    $end            reduce using rule 84 (expr -> expr GTE expr .)
+    GROUP           reduce using rule 84 (expr -> expr GTE expr .)
+    ORDER           reduce using rule 84 (expr -> expr GTE expr .)
+    LIMIT           reduce using rule 84 (expr -> expr GTE expr .)
+    WHERE           reduce using rule 84 (expr -> expr GTE expr .)
+    LEFT            reduce using rule 84 (expr -> expr GTE expr .)
+    JOIN            reduce using rule 84 (expr -> expr GTE expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
 
 
 state 83
 
-    (20) data_type -> DOUBLE .
-    NOT_NULL        reduce using rule 20 (data_type -> DOUBLE .)
-    PRIMARY_KEY     reduce using rule 20 (data_type -> DOUBLE .)
-    ,               reduce using rule 20 (data_type -> DOUBLE .)
-    )               reduce using rule 20 (data_type -> DOUBLE .)
+    (85) expr -> expr LTE expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LIKE            reduce using rule 85 (expr -> expr LTE expr .)
+    NEQ             reduce using rule 85 (expr -> expr LTE expr .)
+    GTE             reduce using rule 85 (expr -> expr LTE expr .)
+    LTE             reduce using rule 85 (expr -> expr LTE expr .)
+    <               reduce using rule 85 (expr -> expr LTE expr .)
+    >               reduce using rule 85 (expr -> expr LTE expr .)
+    =               reduce using rule 85 (expr -> expr LTE expr .)
+    OR              reduce using rule 85 (expr -> expr LTE expr .)
+    AND             reduce using rule 85 (expr -> expr LTE expr .)
+    ,               reduce using rule 85 (expr -> expr LTE expr .)
+    FROM            reduce using rule 85 (expr -> expr LTE expr .)
+    )               reduce using rule 85 (expr -> expr LTE expr .)
+    $end            reduce using rule 85 (expr -> expr LTE expr .)
+    GROUP           reduce using rule 85 (expr -> expr LTE expr .)
+    ORDER           reduce using rule 85 (expr -> expr LTE expr .)
+    LIMIT           reduce using rule 85 (expr -> expr LTE expr .)
+    WHERE           reduce using rule 85 (expr -> expr LTE expr .)
+    LEFT            reduce using rule 85 (expr -> expr LTE expr .)
+    JOIN            reduce using rule 85 (expr -> expr LTE expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
 
 
 state 84
 
-    (21) data_type -> TIMESTAMP .
-    NOT_NULL        reduce using rule 21 (data_type -> TIMESTAMP .)
-    PRIMARY_KEY     reduce using rule 21 (data_type -> TIMESTAMP .)
-    ,               reduce using rule 21 (data_type -> TIMESTAMP .)
-    )               reduce using rule 21 (data_type -> TIMESTAMP .)
+    (86) expr -> expr < expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LIKE            reduce using rule 86 (expr -> expr < expr .)
+    NEQ             reduce using rule 86 (expr -> expr < expr .)
+    GTE             reduce using rule 86 (expr -> expr < expr .)
+    LTE             reduce using rule 86 (expr -> expr < expr .)
+    <               reduce using rule 86 (expr -> expr < expr .)
+    >               reduce using rule 86 (expr -> expr < expr .)
+    =               reduce using rule 86 (expr -> expr < expr .)
+    OR              reduce using rule 86 (expr -> expr < expr .)
+    AND             reduce using rule 86 (expr -> expr < expr .)
+    ,               reduce using rule 86 (expr -> expr < expr .)
+    FROM            reduce using rule 86 (expr -> expr < expr .)
+    )               reduce using rule 86 (expr -> expr < expr .)
+    $end            reduce using rule 86 (expr -> expr < expr .)
+    GROUP           reduce using rule 86 (expr -> expr < expr .)
+    ORDER           reduce using rule 86 (expr -> expr < expr .)
+    LIMIT           reduce using rule 86 (expr -> expr < expr .)
+    WHERE           reduce using rule 86 (expr -> expr < expr .)
+    LEFT            reduce using rule 86 (expr -> expr < expr .)
+    JOIN            reduce using rule 86 (expr -> expr < expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
 
 
 state 85
 
-    (22) data_type -> FLOAT .
-    NOT_NULL        reduce using rule 22 (data_type -> FLOAT .)
-    PRIMARY_KEY     reduce using rule 22 (data_type -> FLOAT .)
-    ,               reduce using rule 22 (data_type -> FLOAT .)
-    )               reduce using rule 22 (data_type -> FLOAT .)
+    (87) expr -> expr > expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LIKE            reduce using rule 87 (expr -> expr > expr .)
+    NEQ             reduce using rule 87 (expr -> expr > expr .)
+    GTE             reduce using rule 87 (expr -> expr > expr .)
+    LTE             reduce using rule 87 (expr -> expr > expr .)
+    <               reduce using rule 87 (expr -> expr > expr .)
+    >               reduce using rule 87 (expr -> expr > expr .)
+    =               reduce using rule 87 (expr -> expr > expr .)
+    OR              reduce using rule 87 (expr -> expr > expr .)
+    AND             reduce using rule 87 (expr -> expr > expr .)
+    ,               reduce using rule 87 (expr -> expr > expr .)
+    FROM            reduce using rule 87 (expr -> expr > expr .)
+    )               reduce using rule 87 (expr -> expr > expr .)
+    $end            reduce using rule 87 (expr -> expr > expr .)
+    GROUP           reduce using rule 87 (expr -> expr > expr .)
+    ORDER           reduce using rule 87 (expr -> expr > expr .)
+    LIMIT           reduce using rule 87 (expr -> expr > expr .)
+    WHERE           reduce using rule 87 (expr -> expr > expr .)
+    LEFT            reduce using rule 87 (expr -> expr > expr .)
+    JOIN            reduce using rule 87 (expr -> expr > expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
 
 
 state 86
 
-    (23) data_type -> INT .
-    NOT_NULL        reduce using rule 23 (data_type -> INT .)
-    PRIMARY_KEY     reduce using rule 23 (data_type -> INT .)
-    ,               reduce using rule 23 (data_type -> INT .)
-    )               reduce using rule 23 (data_type -> INT .)
+    (88) expr -> expr = expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LIKE            reduce using rule 88 (expr -> expr = expr .)
+    NEQ             reduce using rule 88 (expr -> expr = expr .)
+    GTE             reduce using rule 88 (expr -> expr = expr .)
+    LTE             reduce using rule 88 (expr -> expr = expr .)
+    <               reduce using rule 88 (expr -> expr = expr .)
+    >               reduce using rule 88 (expr -> expr = expr .)
+    =               reduce using rule 88 (expr -> expr = expr .)
+    OR              reduce using rule 88 (expr -> expr = expr .)
+    AND             reduce using rule 88 (expr -> expr = expr .)
+    ,               reduce using rule 88 (expr -> expr = expr .)
+    FROM            reduce using rule 88 (expr -> expr = expr .)
+    )               reduce using rule 88 (expr -> expr = expr .)
+    $end            reduce using rule 88 (expr -> expr = expr .)
+    GROUP           reduce using rule 88 (expr -> expr = expr .)
+    ORDER           reduce using rule 88 (expr -> expr = expr .)
+    LIMIT           reduce using rule 88 (expr -> expr = expr .)
+    WHERE           reduce using rule 88 (expr -> expr = expr .)
+    LEFT            reduce using rule 88 (expr -> expr = expr .)
+    JOIN            reduce using rule 88 (expr -> expr = expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
 
 
 state 87
 
-    (12) create_table -> CREATE TABLE IDENTIFIER ( columns ) .
-    $end            reduce using rule 12 (create_table -> CREATE TABLE IDENTIFIER ( columns ) .)
+    (89) expr -> expr OR expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    OR              reduce using rule 89 (expr -> expr OR expr .)
+    ,               reduce using rule 89 (expr -> expr OR expr .)
+    FROM            reduce using rule 89 (expr -> expr OR expr .)
+    )               reduce using rule 89 (expr -> expr OR expr .)
+    $end            reduce using rule 89 (expr -> expr OR expr .)
+    GROUP           reduce using rule 89 (expr -> expr OR expr .)
+    ORDER           reduce using rule 89 (expr -> expr OR expr .)
+    LIMIT           reduce using rule 89 (expr -> expr OR expr .)
+    WHERE           reduce using rule 89 (expr -> expr OR expr .)
+    LEFT            reduce using rule 89 (expr -> expr OR expr .)
+    JOIN            reduce using rule 89 (expr -> expr OR expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    AND             shift and go to state 57
 
 
 state 88
 
-    (13) columns -> column column_list .
-    )               reduce using rule 13 (columns -> column column_list .)
+    (90) expr -> expr AND expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    OR              reduce using rule 90 (expr -> expr AND expr .)
+    AND             reduce using rule 90 (expr -> expr AND expr .)
+    ,               reduce using rule 90 (expr -> expr AND expr .)
+    FROM            reduce using rule 90 (expr -> expr AND expr .)
+    )               reduce using rule 90 (expr -> expr AND expr .)
+    $end            reduce using rule 90 (expr -> expr AND expr .)
+    GROUP           reduce using rule 90 (expr -> expr AND expr .)
+    ORDER           reduce using rule 90 (expr -> expr AND expr .)
+    LIMIT           reduce using rule 90 (expr -> expr AND expr .)
+    WHERE           reduce using rule 90 (expr -> expr AND expr .)
+    LEFT            reduce using rule 90 (expr -> expr AND expr .)
+    JOIN            reduce using rule 90 (expr -> expr AND expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
 
 
 state 89
 
-    (15) column_list -> , . column
-    (16) column_list -> , . column column_list
-    (17) column -> . IDENTIFIER data_type constraints
-    IDENTIFIER      shift and go to state 68
+    (71) expr -> MIN ( expr . )
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    )               shift and go to state 106
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
-    column                         shift and go to state 106
 
 state 90
 
-    (50) where_in_clause -> WHERE data . . data IN ( select_data )
-    (68) condition -> data . . data OPERATOR data
-    (69) condition -> data . . data OPERATOR data . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (77) expr -> ( expr ) .
+    /               reduce using rule 77 (expr -> ( expr ) .)
+    *               reduce using rule 77 (expr -> ( expr ) .)
+    -               reduce using rule 77 (expr -> ( expr ) .)
+    +               reduce using rule 77 (expr -> ( expr ) .)
+    LIKE            reduce using rule 77 (expr -> ( expr ) .)
+    NEQ             reduce using rule 77 (expr -> ( expr ) .)
+    GTE             reduce using rule 77 (expr -> ( expr ) .)
+    LTE             reduce using rule 77 (expr -> ( expr ) .)
+    <               reduce using rule 77 (expr -> ( expr ) .)
+    >               reduce using rule 77 (expr -> ( expr ) .)
+    =               reduce using rule 77 (expr -> ( expr ) .)
+    OR              reduce using rule 77 (expr -> ( expr ) .)
+    AND             reduce using rule 77 (expr -> ( expr ) .)
+    ,               reduce using rule 77 (expr -> ( expr ) .)
+    FROM            reduce using rule 77 (expr -> ( expr ) .)
+    )               reduce using rule 77 (expr -> ( expr ) .)
+    $end            reduce using rule 77 (expr -> ( expr ) .)
+    GROUP           reduce using rule 77 (expr -> ( expr ) .)
+    ORDER           reduce using rule 77 (expr -> ( expr ) .)
+    LIMIT           reduce using rule 77 (expr -> ( expr ) .)
+    WHERE           reduce using rule 77 (expr -> ( expr ) .)
+    LEFT            reduce using rule 77 (expr -> ( expr ) .)
+    JOIN            reduce using rule 77 (expr -> ( expr ) .)
 
-    data                           shift and go to state 107
 
 state 91
 
-    (67) condition -> data OPERATOR . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (72) expr -> MAX ( expr . )
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    )               shift and go to state 107
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
-    data                           shift and go to state 108
 
 state 92
 
-    (64) conditions -> condition OR . conditions
-    (63) conditions -> .
-    (64) conditions -> . condition OR conditions
-    (65) conditions -> . condition AND conditions
-    (66) conditions -> . condition
-    (67) condition -> . data OPERATOR data
-    (68) condition -> . data . data OPERATOR data
-    (69) condition -> . data . data OPERATOR data . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    $end            reduce using rule 63 (conditions -> .)
-    )               reduce using rule 63 (conditions -> .)
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (73) expr -> SUM ( expr . )
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    )               shift and go to state 108
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
-    condition                      shift and go to state 73
-    conditions                     shift and go to state 109
-    data                           shift and go to state 110
 
 state 93
 
-    (65) conditions -> condition AND . conditions
-    (63) conditions -> .
-    (64) conditions -> . condition OR conditions
-    (65) conditions -> . condition AND conditions
-    (66) conditions -> . condition
-    (67) condition -> . data OPERATOR data
-    (68) condition -> . data . data OPERATOR data
-    (69) condition -> . data . data OPERATOR data . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    $end            reduce using rule 63 (conditions -> .)
-    )               reduce using rule 63 (conditions -> .)
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (74) expr -> COUNT ( expr . )
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    )               shift and go to state 109
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
-    condition                      shift and go to state 73
-    conditions                     shift and go to state 111
-    data                           shift and go to state 110
 
 state 94
 
-    (70) order_clause -> data DESC .
-    $end            reduce using rule 70 (order_clause -> data DESC .)
-    )               reduce using rule 70 (order_clause -> data DESC .)
+    (76) expr -> COUNT ( * . )
+    )               shift and go to state 110
 
 
 state 95
 
-    (71) order_clause -> data ASC .
-    $end            reduce using rule 71 (order_clause -> data ASC .)
-    )               reduce using rule 71 (order_clause -> data ASC .)
+    (75) expr -> AVG ( expr . )
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    )               shift and go to state 111
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
 
 state 96
 
-    (72) join_clause -> JOIN data . . data ON condition
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (92) identifier_ref -> IDENTIFIER . IDENTIFIER .
+    /               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    *               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    -               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    +               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    LIKE            reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    NEQ             reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    GTE             reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    LTE             reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    <               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    >               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    =               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    OR              reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    AND             reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    ,               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    FROM            reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    )               reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    $end            reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    GROUP           reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    ORDER           reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    LIMIT           reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    WHERE           reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    LEFT            reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    JOIN            reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    DESC            reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
+    ASC             reduce using rule 92 (identifier_ref -> IDENTIFIER . IDENTIFIER .)
 
-    data                           shift and go to state 112
 
 state 97
 
-    (29) insert_data -> INSERT INTO IDENTIFIER ( data_columns ) insert_clause .
-    $end            reduce using rule 29 (insert_data -> INSERT INTO IDENTIFIER ( data_columns ) insert_clause .)
+    (33) delete_data -> DELETE FROM IDENTIFIER opt_where .
+    $end            reduce using rule 33 (delete_data -> DELETE FROM IDENTIFIER opt_where .)
 
 
 state 98
 
-    (30) insert_clause -> VALUES . values_clause
-    (32) values_clause -> . ( datas )
-    (33) values_clause -> . ( datas ) , values_clause
-    (               shift and go to state 114
+    (53) opt_where -> WHERE . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
 
-    values_clause                  shift and go to state 113
+    expr                           shift and go to state 112
+    identifier_ref                 shift and go to state 26
 
 state 99
 
-    (31) insert_clause -> SELECT . select_data
-    (36) select_data -> . subquery_select
-    (37) select_data -> . join_select
-    (38) select_data -> . ordered_select
-    (39) select_data -> . conditional_select
-    (40) select_data -> . simple_select
-    (41) select_data -> . select_all
-    (44) subquery_select -> . SELECT data_columns from_clause where_in_clause
-    (47) join_select -> . SELECT alias_columns from_clause_with_alias join_clause
-    (46) ordered_select -> . SELECT data_columns from_clause order_by_clause
-    (45) conditional_select -> . SELECT data_columns from_clause where_clause
-    (43) simple_select -> . SELECT data_columns from_clause
-    (42) select_all -> . SELECT * from_clause
-    SELECT          shift and go to state 20
+    (40) assignment_list -> IDENTIFIER . = expr
+    =               shift and go to state 113
 
-    select_data                    shift and go to state 115
-    subquery_select                shift and go to state 10
-    join_select                    shift and go to state 11
-    ordered_select                 shift and go to state 12
-    conditional_select             shift and go to state 13
-    simple_select                  shift and go to state 14
-    select_all                     shift and go to state 15
 
 state 100
 
-    (17) column -> IDENTIFIER data_type constraints .
-    ,               reduce using rule 17 (column -> IDENTIFIER data_type constraints .)
-    )               reduce using rule 17 (column -> IDENTIFIER data_type constraints .)
+    (32) update_data -> UPDATE IDENTIFIER SET assignment_list . opt_where
+    (41) assignment_list -> assignment_list . , IDENTIFIER = expr
+    (52) opt_where -> .
+    (53) opt_where -> . WHERE expr
+    ,               shift and go to state 115
+    $end            reduce using rule 52 (opt_where -> .)
+    WHERE           shift and go to state 98
 
+    opt_where                      shift and go to state 114
 
 state 101
 
-    (25) constraints -> constraint .
-    (26) constraints -> constraint . constraints
-    (24) constraints -> .
-    (25) constraints -> . constraint
-    (26) constraints -> . constraint constraints
-    (27) constraint -> . NOT_NULL
-    (28) constraint -> . PRIMARY_KEY
-  ! reduce/reduce conflict for , resolved using rule 25 (constraints -> constraint .)
-  ! reduce/reduce conflict for ) resolved using rule 25 (constraints -> constraint .)
-    ,               reduce using rule 25 (constraints -> constraint .)
-    )               reduce using rule 25 (constraints -> constraint .)
-    NOT_NULL        shift and go to state 102
-    PRIMARY_KEY     shift and go to state 103
+    (31) insert_data -> INSERT INTO IDENTIFIER ( . ident_list ) VALUES values_list
+    (34) ident_list -> . IDENTIFIER
+    (35) ident_list -> . ident_list , IDENTIFIER
+    IDENTIFIER      shift and go to state 116
 
-    constraint                     shift and go to state 101
-    constraints                    shift and go to state 116
+    ident_list                     shift and go to state 117
 
 state 102
 
-    (27) constraint -> NOT_NULL .
-    NOT_NULL        reduce using rule 27 (constraint -> NOT_NULL .)
-    PRIMARY_KEY     reduce using rule 27 (constraint -> NOT_NULL .)
-    ,               reduce using rule 27 (constraint -> NOT_NULL .)
-    )               reduce using rule 27 (constraint -> NOT_NULL .)
+    (15) create_table -> CREATE TABLE IDENTIFIER ( . column_defs )
+    (17) column_defs -> . column_def
+    (18) column_defs -> . column_defs , column_def
+    (19) column_def -> . IDENTIFIER data_type opt_constraints
+    IDENTIFIER      shift and go to state 118
 
+    column_defs                    shift and go to state 119
+    column_def                     shift and go to state 120
 
 state 103
 
-    (28) constraint -> PRIMARY_KEY .
-    NOT_NULL        reduce using rule 28 (constraint -> PRIMARY_KEY .)
-    PRIMARY_KEY     reduce using rule 28 (constraint -> PRIMARY_KEY .)
-    ,               reduce using rule 28 (constraint -> PRIMARY_KEY .)
-    )               reduce using rule 28 (constraint -> PRIMARY_KEY .)
+    (42) select_data -> SELECT select_list FROM table_source opt_join . opt_where opt_group_by opt_order_by opt_limit
+    (50) opt_join -> opt_join . LEFT JOIN table_ref ON expr
+    (51) opt_join -> opt_join . JOIN table_ref ON expr
+    (52) opt_where -> .
+    (53) opt_where -> . WHERE expr
+    LEFT            shift and go to state 122
+    JOIN            shift and go to state 123
+    GROUP           reduce using rule 52 (opt_where -> .)
+    ORDER           reduce using rule 52 (opt_where -> .)
+    LIMIT           reduce using rule 52 (opt_where -> .)
+    $end            reduce using rule 52 (opt_where -> .)
+    WHERE           shift and go to state 98
 
+    opt_where                      shift and go to state 121
 
 state 104
 
-    (18) data_type -> DECIMAL ( . NUMBER , NUMBER )
-    NUMBER          shift and go to state 117
+    (47) table_ref -> IDENTIFIER IDENTIFIER .
+    LEFT            reduce using rule 47 (table_ref -> IDENTIFIER IDENTIFIER .)
+    JOIN            reduce using rule 47 (table_ref -> IDENTIFIER IDENTIFIER .)
+    WHERE           reduce using rule 47 (table_ref -> IDENTIFIER IDENTIFIER .)
+    GROUP           reduce using rule 47 (table_ref -> IDENTIFIER IDENTIFIER .)
+    ORDER           reduce using rule 47 (table_ref -> IDENTIFIER IDENTIFIER .)
+    LIMIT           reduce using rule 47 (table_ref -> IDENTIFIER IDENTIFIER .)
+    $end            reduce using rule 47 (table_ref -> IDENTIFIER IDENTIFIER .)
+    ON              reduce using rule 47 (table_ref -> IDENTIFIER IDENTIFIER .)
 
 
 state 105
 
-    (19) data_type -> VARCHAR ( . NUMBER )
-    NUMBER          shift and go to state 118
+    (46) table_ref -> IDENTIFIER AS . IDENTIFIER
+    IDENTIFIER      shift and go to state 124
 
 
 state 106
 
-    (15) column_list -> , column .
-    (16) column_list -> , column . column_list
-    (14) column_list -> .
-    (15) column_list -> . , column
-    (16) column_list -> . , column column_list
-  ! reduce/reduce conflict for ) resolved using rule 15 (column_list -> , column .)
-    )               reduce using rule 15 (column_list -> , column .)
-    ,               shift and go to state 89
+    (71) expr -> MIN ( expr ) .
+    /               reduce using rule 71 (expr -> MIN ( expr ) .)
+    *               reduce using rule 71 (expr -> MIN ( expr ) .)
+    -               reduce using rule 71 (expr -> MIN ( expr ) .)
+    +               reduce using rule 71 (expr -> MIN ( expr ) .)
+    LIKE            reduce using rule 71 (expr -> MIN ( expr ) .)
+    NEQ             reduce using rule 71 (expr -> MIN ( expr ) .)
+    GTE             reduce using rule 71 (expr -> MIN ( expr ) .)
+    LTE             reduce using rule 71 (expr -> MIN ( expr ) .)
+    <               reduce using rule 71 (expr -> MIN ( expr ) .)
+    >               reduce using rule 71 (expr -> MIN ( expr ) .)
+    =               reduce using rule 71 (expr -> MIN ( expr ) .)
+    OR              reduce using rule 71 (expr -> MIN ( expr ) .)
+    AND             reduce using rule 71 (expr -> MIN ( expr ) .)
+    ,               reduce using rule 71 (expr -> MIN ( expr ) .)
+    FROM            reduce using rule 71 (expr -> MIN ( expr ) .)
+    )               reduce using rule 71 (expr -> MIN ( expr ) .)
+    $end            reduce using rule 71 (expr -> MIN ( expr ) .)
+    GROUP           reduce using rule 71 (expr -> MIN ( expr ) .)
+    ORDER           reduce using rule 71 (expr -> MIN ( expr ) .)
+    LIMIT           reduce using rule 71 (expr -> MIN ( expr ) .)
+    WHERE           reduce using rule 71 (expr -> MIN ( expr ) .)
+    LEFT            reduce using rule 71 (expr -> MIN ( expr ) .)
+    JOIN            reduce using rule 71 (expr -> MIN ( expr ) .)
 
-    column_list                    shift and go to state 119
 
 state 107
 
-    (50) where_in_clause -> WHERE data . data . IN ( select_data )
-    (68) condition -> data . data . OPERATOR data
-    (69) condition -> data . data . OPERATOR data . data
-    IN              shift and go to state 120
-    OPERATOR        shift and go to state 121
+    (72) expr -> MAX ( expr ) .
+    /               reduce using rule 72 (expr -> MAX ( expr ) .)
+    *               reduce using rule 72 (expr -> MAX ( expr ) .)
+    -               reduce using rule 72 (expr -> MAX ( expr ) .)
+    +               reduce using rule 72 (expr -> MAX ( expr ) .)
+    LIKE            reduce using rule 72 (expr -> MAX ( expr ) .)
+    NEQ             reduce using rule 72 (expr -> MAX ( expr ) .)
+    GTE             reduce using rule 72 (expr -> MAX ( expr ) .)
+    LTE             reduce using rule 72 (expr -> MAX ( expr ) .)
+    <               reduce using rule 72 (expr -> MAX ( expr ) .)
+    >               reduce using rule 72 (expr -> MAX ( expr ) .)
+    =               reduce using rule 72 (expr -> MAX ( expr ) .)
+    OR              reduce using rule 72 (expr -> MAX ( expr ) .)
+    AND             reduce using rule 72 (expr -> MAX ( expr ) .)
+    ,               reduce using rule 72 (expr -> MAX ( expr ) .)
+    FROM            reduce using rule 72 (expr -> MAX ( expr ) .)
+    )               reduce using rule 72 (expr -> MAX ( expr ) .)
+    $end            reduce using rule 72 (expr -> MAX ( expr ) .)
+    GROUP           reduce using rule 72 (expr -> MAX ( expr ) .)
+    ORDER           reduce using rule 72 (expr -> MAX ( expr ) .)
+    LIMIT           reduce using rule 72 (expr -> MAX ( expr ) .)
+    WHERE           reduce using rule 72 (expr -> MAX ( expr ) .)
+    LEFT            reduce using rule 72 (expr -> MAX ( expr ) .)
+    JOIN            reduce using rule 72 (expr -> MAX ( expr ) .)
 
 
 state 108
 
-    (67) condition -> data OPERATOR data .
-    OR              reduce using rule 67 (condition -> data OPERATOR data .)
-    AND             reduce using rule 67 (condition -> data OPERATOR data .)
-    $end            reduce using rule 67 (condition -> data OPERATOR data .)
-    )               reduce using rule 67 (condition -> data OPERATOR data .)
+    (73) expr -> SUM ( expr ) .
+    /               reduce using rule 73 (expr -> SUM ( expr ) .)
+    *               reduce using rule 73 (expr -> SUM ( expr ) .)
+    -               reduce using rule 73 (expr -> SUM ( expr ) .)
+    +               reduce using rule 73 (expr -> SUM ( expr ) .)
+    LIKE            reduce using rule 73 (expr -> SUM ( expr ) .)
+    NEQ             reduce using rule 73 (expr -> SUM ( expr ) .)
+    GTE             reduce using rule 73 (expr -> SUM ( expr ) .)
+    LTE             reduce using rule 73 (expr -> SUM ( expr ) .)
+    <               reduce using rule 73 (expr -> SUM ( expr ) .)
+    >               reduce using rule 73 (expr -> SUM ( expr ) .)
+    =               reduce using rule 73 (expr -> SUM ( expr ) .)
+    OR              reduce using rule 73 (expr -> SUM ( expr ) .)
+    AND             reduce using rule 73 (expr -> SUM ( expr ) .)
+    ,               reduce using rule 73 (expr -> SUM ( expr ) .)
+    FROM            reduce using rule 73 (expr -> SUM ( expr ) .)
+    )               reduce using rule 73 (expr -> SUM ( expr ) .)
+    $end            reduce using rule 73 (expr -> SUM ( expr ) .)
+    GROUP           reduce using rule 73 (expr -> SUM ( expr ) .)
+    ORDER           reduce using rule 73 (expr -> SUM ( expr ) .)
+    LIMIT           reduce using rule 73 (expr -> SUM ( expr ) .)
+    WHERE           reduce using rule 73 (expr -> SUM ( expr ) .)
+    LEFT            reduce using rule 73 (expr -> SUM ( expr ) .)
+    JOIN            reduce using rule 73 (expr -> SUM ( expr ) .)
 
 
 state 109
 
-    (64) conditions -> condition OR conditions .
-    $end            reduce using rule 64 (conditions -> condition OR conditions .)
-    )               reduce using rule 64 (conditions -> condition OR conditions .)
+    (74) expr -> COUNT ( expr ) .
+    /               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    *               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    -               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    +               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    LIKE            reduce using rule 74 (expr -> COUNT ( expr ) .)
+    NEQ             reduce using rule 74 (expr -> COUNT ( expr ) .)
+    GTE             reduce using rule 74 (expr -> COUNT ( expr ) .)
+    LTE             reduce using rule 74 (expr -> COUNT ( expr ) .)
+    <               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    >               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    =               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    OR              reduce using rule 74 (expr -> COUNT ( expr ) .)
+    AND             reduce using rule 74 (expr -> COUNT ( expr ) .)
+    ,               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    FROM            reduce using rule 74 (expr -> COUNT ( expr ) .)
+    )               reduce using rule 74 (expr -> COUNT ( expr ) .)
+    $end            reduce using rule 74 (expr -> COUNT ( expr ) .)
+    GROUP           reduce using rule 74 (expr -> COUNT ( expr ) .)
+    ORDER           reduce using rule 74 (expr -> COUNT ( expr ) .)
+    LIMIT           reduce using rule 74 (expr -> COUNT ( expr ) .)
+    WHERE           reduce using rule 74 (expr -> COUNT ( expr ) .)
+    LEFT            reduce using rule 74 (expr -> COUNT ( expr ) .)
+    JOIN            reduce using rule 74 (expr -> COUNT ( expr ) .)
 
 
 state 110
 
-    (67) condition -> data . OPERATOR data
-    (68) condition -> data . . data OPERATOR data
-    (69) condition -> data . . data OPERATOR data . data
-    OPERATOR        shift and go to state 91
-    .               shift and go to state 122
+    (76) expr -> COUNT ( * ) .
+    /               reduce using rule 76 (expr -> COUNT ( * ) .)
+    *               reduce using rule 76 (expr -> COUNT ( * ) .)
+    -               reduce using rule 76 (expr -> COUNT ( * ) .)
+    +               reduce using rule 76 (expr -> COUNT ( * ) .)
+    LIKE            reduce using rule 76 (expr -> COUNT ( * ) .)
+    NEQ             reduce using rule 76 (expr -> COUNT ( * ) .)
+    GTE             reduce using rule 76 (expr -> COUNT ( * ) .)
+    LTE             reduce using rule 76 (expr -> COUNT ( * ) .)
+    <               reduce using rule 76 (expr -> COUNT ( * ) .)
+    >               reduce using rule 76 (expr -> COUNT ( * ) .)
+    =               reduce using rule 76 (expr -> COUNT ( * ) .)
+    OR              reduce using rule 76 (expr -> COUNT ( * ) .)
+    AND             reduce using rule 76 (expr -> COUNT ( * ) .)
+    ,               reduce using rule 76 (expr -> COUNT ( * ) .)
+    FROM            reduce using rule 76 (expr -> COUNT ( * ) .)
+    )               reduce using rule 76 (expr -> COUNT ( * ) .)
+    $end            reduce using rule 76 (expr -> COUNT ( * ) .)
+    GROUP           reduce using rule 76 (expr -> COUNT ( * ) .)
+    ORDER           reduce using rule 76 (expr -> COUNT ( * ) .)
+    LIMIT           reduce using rule 76 (expr -> COUNT ( * ) .)
+    WHERE           reduce using rule 76 (expr -> COUNT ( * ) .)
+    LEFT            reduce using rule 76 (expr -> COUNT ( * ) .)
+    JOIN            reduce using rule 76 (expr -> COUNT ( * ) .)
 
 
 state 111
 
-    (65) conditions -> condition AND conditions .
-    $end            reduce using rule 65 (conditions -> condition AND conditions .)
-    )               reduce using rule 65 (conditions -> condition AND conditions .)
+    (75) expr -> AVG ( expr ) .
+    /               reduce using rule 75 (expr -> AVG ( expr ) .)
+    *               reduce using rule 75 (expr -> AVG ( expr ) .)
+    -               reduce using rule 75 (expr -> AVG ( expr ) .)
+    +               reduce using rule 75 (expr -> AVG ( expr ) .)
+    LIKE            reduce using rule 75 (expr -> AVG ( expr ) .)
+    NEQ             reduce using rule 75 (expr -> AVG ( expr ) .)
+    GTE             reduce using rule 75 (expr -> AVG ( expr ) .)
+    LTE             reduce using rule 75 (expr -> AVG ( expr ) .)
+    <               reduce using rule 75 (expr -> AVG ( expr ) .)
+    >               reduce using rule 75 (expr -> AVG ( expr ) .)
+    =               reduce using rule 75 (expr -> AVG ( expr ) .)
+    OR              reduce using rule 75 (expr -> AVG ( expr ) .)
+    AND             reduce using rule 75 (expr -> AVG ( expr ) .)
+    ,               reduce using rule 75 (expr -> AVG ( expr ) .)
+    FROM            reduce using rule 75 (expr -> AVG ( expr ) .)
+    )               reduce using rule 75 (expr -> AVG ( expr ) .)
+    $end            reduce using rule 75 (expr -> AVG ( expr ) .)
+    GROUP           reduce using rule 75 (expr -> AVG ( expr ) .)
+    ORDER           reduce using rule 75 (expr -> AVG ( expr ) .)
+    LIMIT           reduce using rule 75 (expr -> AVG ( expr ) .)
+    WHERE           reduce using rule 75 (expr -> AVG ( expr ) .)
+    LEFT            reduce using rule 75 (expr -> AVG ( expr ) .)
+    JOIN            reduce using rule 75 (expr -> AVG ( expr ) .)
 
 
 state 112
 
-    (72) join_clause -> JOIN data . data . ON condition
-    ON              shift and go to state 123
+    (53) opt_where -> WHERE expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    $end            reduce using rule 53 (opt_where -> WHERE expr .)
+    GROUP           reduce using rule 53 (opt_where -> WHERE expr .)
+    ORDER           reduce using rule 53 (opt_where -> WHERE expr .)
+    LIMIT           reduce using rule 53 (opt_where -> WHERE expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
 
 state 113
 
-    (30) insert_clause -> VALUES values_clause .
-    $end            reduce using rule 30 (insert_clause -> VALUES values_clause .)
+    (40) assignment_list -> IDENTIFIER = . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
 
+    expr                           shift and go to state 125
+    identifier_ref                 shift and go to state 26
 
 state 114
 
-    (32) values_clause -> ( . datas )
-    (33) values_clause -> ( . datas ) , values_clause
-    (34) datas -> . data
-    (35) datas -> . datas , data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (32) update_data -> UPDATE IDENTIFIER SET assignment_list opt_where .
+    $end            reduce using rule 32 (update_data -> UPDATE IDENTIFIER SET assignment_list opt_where .)
 
-    datas                          shift and go to state 124
-    data                           shift and go to state 125
 
 state 115
 
-    (31) insert_clause -> SELECT select_data .
-    $end            reduce using rule 31 (insert_clause -> SELECT select_data .)
+    (41) assignment_list -> assignment_list , . IDENTIFIER = expr
+    IDENTIFIER      shift and go to state 126
 
 
 state 116
 
-    (26) constraints -> constraint constraints .
-    ,               reduce using rule 26 (constraints -> constraint constraints .)
-    )               reduce using rule 26 (constraints -> constraint constraints .)
+    (34) ident_list -> IDENTIFIER .
+    )               reduce using rule 34 (ident_list -> IDENTIFIER .)
+    ,               reduce using rule 34 (ident_list -> IDENTIFIER .)
 
 
 state 117
 
-    (18) data_type -> DECIMAL ( NUMBER . , NUMBER )
-    ,               shift and go to state 126
+    (31) insert_data -> INSERT INTO IDENTIFIER ( ident_list . ) VALUES values_list
+    (35) ident_list -> ident_list . , IDENTIFIER
+    )               shift and go to state 127
+    ,               shift and go to state 128
 
 
 state 118
 
-    (19) data_type -> VARCHAR ( NUMBER . )
-    )               shift and go to state 127
+    (19) column_def -> IDENTIFIER . data_type opt_constraints
+    (20) data_type -> . DECIMAL ( NUMBER , NUMBER )
+    (21) data_type -> . VARCHAR ( NUMBER )
+    (22) data_type -> . TIMESTAMP
+    (23) data_type -> . DOUBLE
+    (24) data_type -> . FLOAT
+    (25) data_type -> . INT
+    DECIMAL         shift and go to state 130
+    VARCHAR         shift and go to state 131
+    TIMESTAMP       shift and go to state 132
+    DOUBLE          shift and go to state 133
+    FLOAT           shift and go to state 134
+    INT             shift and go to state 135
 
+    data_type                      shift and go to state 129
 
 state 119
 
-    (16) column_list -> , column column_list .
-    )               reduce using rule 16 (column_list -> , column column_list .)
+    (15) create_table -> CREATE TABLE IDENTIFIER ( column_defs . )
+    (18) column_defs -> column_defs . , column_def
+    )               shift and go to state 136
+    ,               shift and go to state 137
 
 
 state 120
 
-    (50) where_in_clause -> WHERE data . data IN . ( select_data )
-    (               shift and go to state 128
+    (17) column_defs -> column_def .
+    )               reduce using rule 17 (column_defs -> column_def .)
+    ,               reduce using rule 17 (column_defs -> column_def .)
 
 
 state 121
 
-    (68) condition -> data . data OPERATOR . data
-    (69) condition -> data . data OPERATOR . data . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (42) select_data -> SELECT select_list FROM table_source opt_join opt_where . opt_group_by opt_order_by opt_limit
+    (54) opt_group_by -> .
+    (55) opt_group_by -> . GROUP BY ref_list
+    ORDER           reduce using rule 54 (opt_group_by -> .)
+    LIMIT           reduce using rule 54 (opt_group_by -> .)
+    $end            reduce using rule 54 (opt_group_by -> .)
+    GROUP           shift and go to state 139
 
-    data                           shift and go to state 129
+    opt_group_by                   shift and go to state 138
 
 state 122
 
-    (68) condition -> data . . data OPERATOR data
-    (69) condition -> data . . data OPERATOR data . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (50) opt_join -> opt_join LEFT . JOIN table_ref ON expr
+    JOIN            shift and go to state 140
 
-    data                           shift and go to state 130
 
 state 123
 
-    (72) join_clause -> JOIN data . data ON . condition
-    (67) condition -> . data OPERATOR data
-    (68) condition -> . data . data OPERATOR data
-    (69) condition -> . data . data OPERATOR data . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (51) opt_join -> opt_join JOIN . table_ref ON expr
+    (45) table_ref -> . IDENTIFIER
+    (46) table_ref -> . IDENTIFIER AS IDENTIFIER
+    (47) table_ref -> . IDENTIFIER IDENTIFIER
+    IDENTIFIER      shift and go to state 74
 
-    data                           shift and go to state 110
-    condition                      shift and go to state 131
+    table_ref                      shift and go to state 141
 
 state 124
 
-    (32) values_clause -> ( datas . )
-    (33) values_clause -> ( datas . ) , values_clause
-    (35) datas -> datas . , data
-    )               shift and go to state 132
-    ,               shift and go to state 133
+    (46) table_ref -> IDENTIFIER AS IDENTIFIER .
+    LEFT            reduce using rule 46 (table_ref -> IDENTIFIER AS IDENTIFIER .)
+    JOIN            reduce using rule 46 (table_ref -> IDENTIFIER AS IDENTIFIER .)
+    WHERE           reduce using rule 46 (table_ref -> IDENTIFIER AS IDENTIFIER .)
+    GROUP           reduce using rule 46 (table_ref -> IDENTIFIER AS IDENTIFIER .)
+    ORDER           reduce using rule 46 (table_ref -> IDENTIFIER AS IDENTIFIER .)
+    LIMIT           reduce using rule 46 (table_ref -> IDENTIFIER AS IDENTIFIER .)
+    $end            reduce using rule 46 (table_ref -> IDENTIFIER AS IDENTIFIER .)
+    ON              reduce using rule 46 (table_ref -> IDENTIFIER AS IDENTIFIER .)
 
 
 state 125
 
-    (34) datas -> data .
-    )               reduce using rule 34 (datas -> data .)
-    ,               reduce using rule 34 (datas -> data .)
+    (40) assignment_list -> IDENTIFIER = expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    ,               reduce using rule 40 (assignment_list -> IDENTIFIER = expr .)
+    WHERE           reduce using rule 40 (assignment_list -> IDENTIFIER = expr .)
+    $end            reduce using rule 40 (assignment_list -> IDENTIFIER = expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
 
 
 state 126
 
-    (18) data_type -> DECIMAL ( NUMBER , . NUMBER )
-    NUMBER          shift and go to state 134
+    (41) assignment_list -> assignment_list , IDENTIFIER . = expr
+    =               shift and go to state 142
 
 
 state 127
 
-    (19) data_type -> VARCHAR ( NUMBER ) .
-    NOT_NULL        reduce using rule 19 (data_type -> VARCHAR ( NUMBER ) .)
-    PRIMARY_KEY     reduce using rule 19 (data_type -> VARCHAR ( NUMBER ) .)
-    ,               reduce using rule 19 (data_type -> VARCHAR ( NUMBER ) .)
-    )               reduce using rule 19 (data_type -> VARCHAR ( NUMBER ) .)
+    (31) insert_data -> INSERT INTO IDENTIFIER ( ident_list ) . VALUES values_list
+    VALUES          shift and go to state 143
 
 
 state 128
 
-    (50) where_in_clause -> WHERE data . data IN ( . select_data )
-    (36) select_data -> . subquery_select
-    (37) select_data -> . join_select
-    (38) select_data -> . ordered_select
-    (39) select_data -> . conditional_select
-    (40) select_data -> . simple_select
-    (41) select_data -> . select_all
-    (44) subquery_select -> . SELECT data_columns from_clause where_in_clause
-    (47) join_select -> . SELECT alias_columns from_clause_with_alias join_clause
-    (46) ordered_select -> . SELECT data_columns from_clause order_by_clause
-    (45) conditional_select -> . SELECT data_columns from_clause where_clause
-    (43) simple_select -> . SELECT data_columns from_clause
-    (42) select_all -> . SELECT * from_clause
-    SELECT          shift and go to state 20
+    (35) ident_list -> ident_list , . IDENTIFIER
+    IDENTIFIER      shift and go to state 144
 
-    select_data                    shift and go to state 135
-    subquery_select                shift and go to state 10
-    join_select                    shift and go to state 11
-    ordered_select                 shift and go to state 12
-    conditional_select             shift and go to state 13
-    simple_select                  shift and go to state 14
-    select_all                     shift and go to state 15
 
 state 129
 
-    (68) condition -> data . data OPERATOR data .
-    (69) condition -> data . data OPERATOR data . . data
-    OR              reduce using rule 68 (condition -> data . data OPERATOR data .)
-    AND             reduce using rule 68 (condition -> data . data OPERATOR data .)
-    $end            reduce using rule 68 (condition -> data . data OPERATOR data .)
-    )               reduce using rule 68 (condition -> data . data OPERATOR data .)
-    .               shift and go to state 136
+    (19) column_def -> IDENTIFIER data_type . opt_constraints
+    (26) opt_constraints -> .
+    (27) opt_constraints -> . constraint
+    (28) opt_constraints -> . constraint opt_constraints
+    (29) constraint -> . NOT NULL
+    (30) constraint -> . PRIMARY KEY
+    )               reduce using rule 26 (opt_constraints -> .)
+    ,               reduce using rule 26 (opt_constraints -> .)
+    NOT             shift and go to state 147
+    PRIMARY         shift and go to state 148
 
+    opt_constraints                shift and go to state 145
+    constraint                     shift and go to state 146
 
 state 130
 
-    (68) condition -> data . data . OPERATOR data
-    (69) condition -> data . data . OPERATOR data . data
-    OPERATOR        shift and go to state 121
+    (20) data_type -> DECIMAL . ( NUMBER , NUMBER )
+    (               shift and go to state 149
 
 
 state 131
 
-    (72) join_clause -> JOIN data . data ON condition .
-    $end            reduce using rule 72 (join_clause -> JOIN data . data ON condition .)
-    )               reduce using rule 72 (join_clause -> JOIN data . data ON condition .)
+    (21) data_type -> VARCHAR . ( NUMBER )
+    (               shift and go to state 150
 
 
 state 132
 
-    (32) values_clause -> ( datas ) .
-    (33) values_clause -> ( datas ) . , values_clause
-    $end            reduce using rule 32 (values_clause -> ( datas ) .)
-    ,               shift and go to state 137
+    (22) data_type -> TIMESTAMP .
+    NOT             reduce using rule 22 (data_type -> TIMESTAMP .)
+    PRIMARY         reduce using rule 22 (data_type -> TIMESTAMP .)
+    )               reduce using rule 22 (data_type -> TIMESTAMP .)
+    ,               reduce using rule 22 (data_type -> TIMESTAMP .)
 
 
 state 133
 
-    (35) datas -> datas , . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (23) data_type -> DOUBLE .
+    NOT             reduce using rule 23 (data_type -> DOUBLE .)
+    PRIMARY         reduce using rule 23 (data_type -> DOUBLE .)
+    )               reduce using rule 23 (data_type -> DOUBLE .)
+    ,               reduce using rule 23 (data_type -> DOUBLE .)
 
-    data                           shift and go to state 138
 
 state 134
 
-    (18) data_type -> DECIMAL ( NUMBER , NUMBER . )
-    )               shift and go to state 139
+    (24) data_type -> FLOAT .
+    NOT             reduce using rule 24 (data_type -> FLOAT .)
+    PRIMARY         reduce using rule 24 (data_type -> FLOAT .)
+    )               reduce using rule 24 (data_type -> FLOAT .)
+    ,               reduce using rule 24 (data_type -> FLOAT .)
 
 
 state 135
 
-    (50) where_in_clause -> WHERE data . data IN ( select_data . )
-    )               shift and go to state 140
+    (25) data_type -> INT .
+    NOT             reduce using rule 25 (data_type -> INT .)
+    PRIMARY         reduce using rule 25 (data_type -> INT .)
+    )               reduce using rule 25 (data_type -> INT .)
+    ,               reduce using rule 25 (data_type -> INT .)
 
 
 state 136
 
-    (69) condition -> data . data OPERATOR data . . data
-    (58) data -> . NUMBER
-    (59) data -> . IDENTIFIER
-    (60) data -> . ' IDENTIFIER '
-    (61) data -> . ' IDENTIFIER IDENTIFIER '
-    NUMBER          shift and go to state 32
-    IDENTIFIER      shift and go to state 33
-    '               shift and go to state 34
+    (15) create_table -> CREATE TABLE IDENTIFIER ( column_defs ) .
+    $end            reduce using rule 15 (create_table -> CREATE TABLE IDENTIFIER ( column_defs ) .)
 
-    data                           shift and go to state 141
 
 state 137
 
-    (33) values_clause -> ( datas ) , . values_clause
-    (32) values_clause -> . ( datas )
-    (33) values_clause -> . ( datas ) , values_clause
-    (               shift and go to state 114
+    (18) column_defs -> column_defs , . column_def
+    (19) column_def -> . IDENTIFIER data_type opt_constraints
+    IDENTIFIER      shift and go to state 118
 
-    values_clause                  shift and go to state 142
+    column_def                     shift and go to state 151
 
 state 138
 
-    (35) datas -> datas , data .
-    )               reduce using rule 35 (datas -> datas , data .)
-    ,               reduce using rule 35 (datas -> datas , data .)
+    (42) select_data -> SELECT select_list FROM table_source opt_join opt_where opt_group_by . opt_order_by opt_limit
+    (56) opt_order_by -> .
+    (57) opt_order_by -> . ORDER BY order_list
+    LIMIT           reduce using rule 56 (opt_order_by -> .)
+    $end            reduce using rule 56 (opt_order_by -> .)
+    ORDER           shift and go to state 153
 
+    opt_order_by                   shift and go to state 152
 
 state 139
 
-    (18) data_type -> DECIMAL ( NUMBER , NUMBER ) .
-    NOT_NULL        reduce using rule 18 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
-    PRIMARY_KEY     reduce using rule 18 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
-    ,               reduce using rule 18 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
-    )               reduce using rule 18 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+    (55) opt_group_by -> GROUP . BY ref_list
+    BY              shift and go to state 154
 
 
 state 140
 
-    (50) where_in_clause -> WHERE data . data IN ( select_data ) .
-    $end            reduce using rule 50 (where_in_clause -> WHERE data . data IN ( select_data ) .)
-    )               reduce using rule 50 (where_in_clause -> WHERE data . data IN ( select_data ) .)
+    (50) opt_join -> opt_join LEFT JOIN . table_ref ON expr
+    (45) table_ref -> . IDENTIFIER
+    (46) table_ref -> . IDENTIFIER AS IDENTIFIER
+    (47) table_ref -> . IDENTIFIER IDENTIFIER
+    IDENTIFIER      shift and go to state 74
 
+    table_ref                      shift and go to state 155
 
 state 141
 
-    (69) condition -> data . data OPERATOR data . data .
-    OR              reduce using rule 69 (condition -> data . data OPERATOR data . data .)
-    AND             reduce using rule 69 (condition -> data . data OPERATOR data . data .)
-    $end            reduce using rule 69 (condition -> data . data OPERATOR data . data .)
-    )               reduce using rule 69 (condition -> data . data OPERATOR data . data .)
+    (51) opt_join -> opt_join JOIN table_ref . ON expr
+    ON              shift and go to state 156
 
 
 state 142
 
-    (33) values_clause -> ( datas ) , values_clause .
-    $end            reduce using rule 33 (values_clause -> ( datas ) , values_clause .)
+    (41) assignment_list -> assignment_list , IDENTIFIER = . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 157
+    identifier_ref                 shift and go to state 26
+
+state 143
+
+    (31) insert_data -> INSERT INTO IDENTIFIER ( ident_list ) VALUES . values_list
+    (38) values_list -> . ( expr_list )
+    (39) values_list -> . values_list , ( expr_list )
+    (               shift and go to state 158
+
+    values_list                    shift and go to state 159
+
+state 144
+
+    (35) ident_list -> ident_list , IDENTIFIER .
+    )               reduce using rule 35 (ident_list -> ident_list , IDENTIFIER .)
+    ,               reduce using rule 35 (ident_list -> ident_list , IDENTIFIER .)
+
+
+state 145
+
+    (19) column_def -> IDENTIFIER data_type opt_constraints .
+    )               reduce using rule 19 (column_def -> IDENTIFIER data_type opt_constraints .)
+    ,               reduce using rule 19 (column_def -> IDENTIFIER data_type opt_constraints .)
+
+
+state 146
+
+    (27) opt_constraints -> constraint .
+    (28) opt_constraints -> constraint . opt_constraints
+    (26) opt_constraints -> .
+    (27) opt_constraints -> . constraint
+    (28) opt_constraints -> . constraint opt_constraints
+    (29) constraint -> . NOT NULL
+    (30) constraint -> . PRIMARY KEY
+  ! reduce/reduce conflict for ) resolved using rule 27 (opt_constraints -> constraint .)
+  ! reduce/reduce conflict for , resolved using rule 27 (opt_constraints -> constraint .)
+    )               reduce using rule 27 (opt_constraints -> constraint .)
+    ,               reduce using rule 27 (opt_constraints -> constraint .)
+    NOT             shift and go to state 147
+    PRIMARY         shift and go to state 148
+
+    constraint                     shift and go to state 146
+    opt_constraints                shift and go to state 160
+
+state 147
+
+    (29) constraint -> NOT . NULL
+    NULL            shift and go to state 161
+
+
+state 148
+
+    (30) constraint -> PRIMARY . KEY
+    KEY             shift and go to state 162
+
+
+state 149
+
+    (20) data_type -> DECIMAL ( . NUMBER , NUMBER )
+    NUMBER          shift and go to state 163
+
+
+state 150
+
+    (21) data_type -> VARCHAR ( . NUMBER )
+    NUMBER          shift and go to state 164
+
+
+state 151
+
+    (18) column_defs -> column_defs , column_def .
+    )               reduce using rule 18 (column_defs -> column_defs , column_def .)
+    ,               reduce using rule 18 (column_defs -> column_defs , column_def .)
+
+
+state 152
+
+    (42) select_data -> SELECT select_list FROM table_source opt_join opt_where opt_group_by opt_order_by . opt_limit
+    (58) opt_limit -> .
+    (59) opt_limit -> . LIMIT NUMBER
+    $end            reduce using rule 58 (opt_limit -> .)
+    LIMIT           shift and go to state 166
+
+    opt_limit                      shift and go to state 165
+
+state 153
+
+    (57) opt_order_by -> ORDER . BY order_list
+    BY              shift and go to state 167
+
+
+state 154
+
+    (55) opt_group_by -> GROUP BY . ref_list
+    (36) ref_list -> . identifier_ref
+    (37) ref_list -> . ref_list , identifier_ref
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    IDENTIFIER      shift and go to state 33
+
+    ref_list                       shift and go to state 168
+    identifier_ref                 shift and go to state 169
+
+state 155
+
+    (50) opt_join -> opt_join LEFT JOIN table_ref . ON expr
+    ON              shift and go to state 170
+
+
+state 156
+
+    (51) opt_join -> opt_join JOIN table_ref ON . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 171
+    identifier_ref                 shift and go to state 26
+
+state 157
+
+    (41) assignment_list -> assignment_list , IDENTIFIER = expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    ,               reduce using rule 41 (assignment_list -> assignment_list , IDENTIFIER = expr .)
+    WHERE           reduce using rule 41 (assignment_list -> assignment_list , IDENTIFIER = expr .)
+    $end            reduce using rule 41 (assignment_list -> assignment_list , IDENTIFIER = expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
+
+
+state 158
+
+    (38) values_list -> ( . expr_list )
+    (66) expr_list -> . expr
+    (67) expr_list -> . expr_list , expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr_list                      shift and go to state 172
+    expr                           shift and go to state 23
+    identifier_ref                 shift and go to state 26
+
+state 159
+
+    (31) insert_data -> INSERT INTO IDENTIFIER ( ident_list ) VALUES values_list .
+    (39) values_list -> values_list . , ( expr_list )
+    $end            reduce using rule 31 (insert_data -> INSERT INTO IDENTIFIER ( ident_list ) VALUES values_list .)
+    ,               shift and go to state 173
+
+
+state 160
+
+    (28) opt_constraints -> constraint opt_constraints .
+    )               reduce using rule 28 (opt_constraints -> constraint opt_constraints .)
+    ,               reduce using rule 28 (opt_constraints -> constraint opt_constraints .)
+
+
+state 161
+
+    (29) constraint -> NOT NULL .
+    NOT             reduce using rule 29 (constraint -> NOT NULL .)
+    PRIMARY         reduce using rule 29 (constraint -> NOT NULL .)
+    )               reduce using rule 29 (constraint -> NOT NULL .)
+    ,               reduce using rule 29 (constraint -> NOT NULL .)
+
+
+state 162
+
+    (30) constraint -> PRIMARY KEY .
+    NOT             reduce using rule 30 (constraint -> PRIMARY KEY .)
+    PRIMARY         reduce using rule 30 (constraint -> PRIMARY KEY .)
+    )               reduce using rule 30 (constraint -> PRIMARY KEY .)
+    ,               reduce using rule 30 (constraint -> PRIMARY KEY .)
+
+
+state 163
+
+    (20) data_type -> DECIMAL ( NUMBER . , NUMBER )
+    ,               shift and go to state 174
+
+
+state 164
+
+    (21) data_type -> VARCHAR ( NUMBER . )
+    )               shift and go to state 175
+
+
+state 165
+
+    (42) select_data -> SELECT select_list FROM table_source opt_join opt_where opt_group_by opt_order_by opt_limit .
+    $end            reduce using rule 42 (select_data -> SELECT select_list FROM table_source opt_join opt_where opt_group_by opt_order_by opt_limit .)
+
+
+state 166
+
+    (59) opt_limit -> LIMIT . NUMBER
+    NUMBER          shift and go to state 176
+
+
+state 167
+
+    (57) opt_order_by -> ORDER BY . order_list
+    (60) order_list -> . identifier_ref
+    (61) order_list -> . identifier_ref DESC
+    (62) order_list -> . identifier_ref ASC
+    (63) order_list -> . order_list , identifier_ref
+    (64) order_list -> . order_list , identifier_ref DESC
+    (65) order_list -> . order_list , identifier_ref ASC
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    IDENTIFIER      shift and go to state 33
+
+    order_list                     shift and go to state 177
+    identifier_ref                 shift and go to state 178
+
+state 168
+
+    (55) opt_group_by -> GROUP BY ref_list .
+    (37) ref_list -> ref_list . , identifier_ref
+    ORDER           reduce using rule 55 (opt_group_by -> GROUP BY ref_list .)
+    LIMIT           reduce using rule 55 (opt_group_by -> GROUP BY ref_list .)
+    $end            reduce using rule 55 (opt_group_by -> GROUP BY ref_list .)
+    ,               shift and go to state 179
+
+
+state 169
+
+    (36) ref_list -> identifier_ref .
+    ,               reduce using rule 36 (ref_list -> identifier_ref .)
+    ORDER           reduce using rule 36 (ref_list -> identifier_ref .)
+    LIMIT           reduce using rule 36 (ref_list -> identifier_ref .)
+    $end            reduce using rule 36 (ref_list -> identifier_ref .)
+
+
+state 170
+
+    (50) opt_join -> opt_join LEFT JOIN table_ref ON . expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr                           shift and go to state 180
+    identifier_ref                 shift and go to state 26
+
+state 171
+
+    (51) opt_join -> opt_join JOIN table_ref ON expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LEFT            reduce using rule 51 (opt_join -> opt_join JOIN table_ref ON expr .)
+    JOIN            reduce using rule 51 (opt_join -> opt_join JOIN table_ref ON expr .)
+    WHERE           reduce using rule 51 (opt_join -> opt_join JOIN table_ref ON expr .)
+    GROUP           reduce using rule 51 (opt_join -> opt_join JOIN table_ref ON expr .)
+    ORDER           reduce using rule 51 (opt_join -> opt_join JOIN table_ref ON expr .)
+    LIMIT           reduce using rule 51 (opt_join -> opt_join JOIN table_ref ON expr .)
+    $end            reduce using rule 51 (opt_join -> opt_join JOIN table_ref ON expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
+
+
+state 172
+
+    (38) values_list -> ( expr_list . )
+    (67) expr_list -> expr_list . , expr
+    )               shift and go to state 181
+    ,               shift and go to state 44
+
+
+state 173
+
+    (39) values_list -> values_list , . ( expr_list )
+    (               shift and go to state 182
+
+
+state 174
+
+    (20) data_type -> DECIMAL ( NUMBER , . NUMBER )
+    NUMBER          shift and go to state 183
+
+
+state 175
+
+    (21) data_type -> VARCHAR ( NUMBER ) .
+    NOT             reduce using rule 21 (data_type -> VARCHAR ( NUMBER ) .)
+    PRIMARY         reduce using rule 21 (data_type -> VARCHAR ( NUMBER ) .)
+    )               reduce using rule 21 (data_type -> VARCHAR ( NUMBER ) .)
+    ,               reduce using rule 21 (data_type -> VARCHAR ( NUMBER ) .)
+
+
+state 176
+
+    (59) opt_limit -> LIMIT NUMBER .
+    $end            reduce using rule 59 (opt_limit -> LIMIT NUMBER .)
+
+
+state 177
+
+    (57) opt_order_by -> ORDER BY order_list .
+    (63) order_list -> order_list . , identifier_ref
+    (64) order_list -> order_list . , identifier_ref DESC
+    (65) order_list -> order_list . , identifier_ref ASC
+    LIMIT           reduce using rule 57 (opt_order_by -> ORDER BY order_list .)
+    $end            reduce using rule 57 (opt_order_by -> ORDER BY order_list .)
+    ,               shift and go to state 184
+
+
+state 178
+
+    (60) order_list -> identifier_ref .
+    (61) order_list -> identifier_ref . DESC
+    (62) order_list -> identifier_ref . ASC
+    ,               reduce using rule 60 (order_list -> identifier_ref .)
+    LIMIT           reduce using rule 60 (order_list -> identifier_ref .)
+    $end            reduce using rule 60 (order_list -> identifier_ref .)
+    DESC            shift and go to state 185
+    ASC             shift and go to state 186
+
+
+state 179
+
+    (37) ref_list -> ref_list , . identifier_ref
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    IDENTIFIER      shift and go to state 33
+
+    identifier_ref                 shift and go to state 187
+
+state 180
+
+    (50) opt_join -> opt_join LEFT JOIN table_ref ON expr .
+    (78) expr -> expr . / expr
+    (79) expr -> expr . * expr
+    (80) expr -> expr . - expr
+    (81) expr -> expr . + expr
+    (82) expr -> expr . LIKE expr
+    (83) expr -> expr . NEQ expr
+    (84) expr -> expr . GTE expr
+    (85) expr -> expr . LTE expr
+    (86) expr -> expr . < expr
+    (87) expr -> expr . > expr
+    (88) expr -> expr . = expr
+    (89) expr -> expr . OR expr
+    (90) expr -> expr . AND expr
+    LEFT            reduce using rule 50 (opt_join -> opt_join LEFT JOIN table_ref ON expr .)
+    JOIN            reduce using rule 50 (opt_join -> opt_join LEFT JOIN table_ref ON expr .)
+    WHERE           reduce using rule 50 (opt_join -> opt_join LEFT JOIN table_ref ON expr .)
+    GROUP           reduce using rule 50 (opt_join -> opt_join LEFT JOIN table_ref ON expr .)
+    ORDER           reduce using rule 50 (opt_join -> opt_join LEFT JOIN table_ref ON expr .)
+    LIMIT           reduce using rule 50 (opt_join -> opt_join LEFT JOIN table_ref ON expr .)
+    $end            reduce using rule 50 (opt_join -> opt_join LEFT JOIN table_ref ON expr .)
+    /               shift and go to state 45
+    *               shift and go to state 46
+    -               shift and go to state 47
+    +               shift and go to state 48
+    LIKE            shift and go to state 49
+    NEQ             shift and go to state 50
+    GTE             shift and go to state 51
+    LTE             shift and go to state 52
+    <               shift and go to state 53
+    >               shift and go to state 54
+    =               shift and go to state 55
+    OR              shift and go to state 56
+    AND             shift and go to state 57
+
+
+state 181
+
+    (38) values_list -> ( expr_list ) .
+    ,               reduce using rule 38 (values_list -> ( expr_list ) .)
+    $end            reduce using rule 38 (values_list -> ( expr_list ) .)
+
+
+state 182
+
+    (39) values_list -> values_list , ( . expr_list )
+    (66) expr_list -> . expr
+    (67) expr_list -> . expr_list , expr
+    (68) expr -> . STRING
+    (69) expr -> . NUMBER
+    (70) expr -> . identifier_ref
+    (71) expr -> . MIN ( expr )
+    (72) expr -> . MAX ( expr )
+    (73) expr -> . SUM ( expr )
+    (74) expr -> . COUNT ( expr )
+    (75) expr -> . AVG ( expr )
+    (76) expr -> . COUNT ( * )
+    (77) expr -> . ( expr )
+    (78) expr -> . expr / expr
+    (79) expr -> . expr * expr
+    (80) expr -> . expr - expr
+    (81) expr -> . expr + expr
+    (82) expr -> . expr LIKE expr
+    (83) expr -> . expr NEQ expr
+    (84) expr -> . expr GTE expr
+    (85) expr -> . expr LTE expr
+    (86) expr -> . expr < expr
+    (87) expr -> . expr > expr
+    (88) expr -> . expr = expr
+    (89) expr -> . expr OR expr
+    (90) expr -> . expr AND expr
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    STRING          shift and go to state 24
+    NUMBER          shift and go to state 25
+    MIN             shift and go to state 27
+    MAX             shift and go to state 29
+    SUM             shift and go to state 30
+    COUNT           shift and go to state 31
+    AVG             shift and go to state 32
+    (               shift and go to state 28
+    IDENTIFIER      shift and go to state 33
+
+    expr_list                      shift and go to state 188
+    expr                           shift and go to state 23
+    identifier_ref                 shift and go to state 26
+
+state 183
+
+    (20) data_type -> DECIMAL ( NUMBER , NUMBER . )
+    )               shift and go to state 189
+
+
+state 184
+
+    (63) order_list -> order_list , . identifier_ref
+    (64) order_list -> order_list , . identifier_ref DESC
+    (65) order_list -> order_list , . identifier_ref ASC
+    (91) identifier_ref -> . IDENTIFIER
+    (92) identifier_ref -> . IDENTIFIER . IDENTIFIER
+    IDENTIFIER      shift and go to state 33
+
+    identifier_ref                 shift and go to state 190
+
+state 185
+
+    (61) order_list -> identifier_ref DESC .
+    ,               reduce using rule 61 (order_list -> identifier_ref DESC .)
+    LIMIT           reduce using rule 61 (order_list -> identifier_ref DESC .)
+    $end            reduce using rule 61 (order_list -> identifier_ref DESC .)
+
+
+state 186
+
+    (62) order_list -> identifier_ref ASC .
+    ,               reduce using rule 62 (order_list -> identifier_ref ASC .)
+    LIMIT           reduce using rule 62 (order_list -> identifier_ref ASC .)
+    $end            reduce using rule 62 (order_list -> identifier_ref ASC .)
+
+
+state 187
+
+    (37) ref_list -> ref_list , identifier_ref .
+    ,               reduce using rule 37 (ref_list -> ref_list , identifier_ref .)
+    ORDER           reduce using rule 37 (ref_list -> ref_list , identifier_ref .)
+    LIMIT           reduce using rule 37 (ref_list -> ref_list , identifier_ref .)
+    $end            reduce using rule 37 (ref_list -> ref_list , identifier_ref .)
+
+
+state 188
+
+    (39) values_list -> values_list , ( expr_list . )
+    (67) expr_list -> expr_list . , expr
+    )               shift and go to state 191
+    ,               shift and go to state 44
+
+
+state 189
+
+    (20) data_type -> DECIMAL ( NUMBER , NUMBER ) .
+    NOT             reduce using rule 20 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+    PRIMARY         reduce using rule 20 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+    )               reduce using rule 20 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+    ,               reduce using rule 20 (data_type -> DECIMAL ( NUMBER , NUMBER ) .)
+
+
+state 190
+
+    (63) order_list -> order_list , identifier_ref .
+    (64) order_list -> order_list , identifier_ref . DESC
+    (65) order_list -> order_list , identifier_ref . ASC
+    ,               reduce using rule 63 (order_list -> order_list , identifier_ref .)
+    LIMIT           reduce using rule 63 (order_list -> order_list , identifier_ref .)
+    $end            reduce using rule 63 (order_list -> order_list , identifier_ref .)
+    DESC            shift and go to state 192
+    ASC             shift and go to state 193
+
+
+state 191
+
+    (39) values_list -> values_list , ( expr_list ) .
+    ,               reduce using rule 39 (values_list -> values_list , ( expr_list ) .)
+    $end            reduce using rule 39 (values_list -> values_list , ( expr_list ) .)
+
+
+state 192
+
+    (64) order_list -> order_list , identifier_ref DESC .
+    ,               reduce using rule 64 (order_list -> order_list , identifier_ref DESC .)
+    LIMIT           reduce using rule 64 (order_list -> order_list , identifier_ref DESC .)
+    $end            reduce using rule 64 (order_list -> order_list , identifier_ref DESC .)
+
+
+state 193
+
+    (65) order_list -> order_list , identifier_ref ASC .
+    ,               reduce using rule 65 (order_list -> order_list , identifier_ref ASC .)
+    LIMIT           reduce using rule 65 (order_list -> order_list , identifier_ref ASC .)
+    $end            reduce using rule 65 (order_list -> order_list , identifier_ref ASC .)
 
 
 Conflicts:
 
-reduce/reduce conflict in state 101 resolved using rule constraints -> constraint
-rejected rule (constraints -> <empty>) in state 101
-reduce/reduce conflict in state 106 resolved using rule column_list -> , column
-rejected rule (column_list -> <empty>) in state 106
+reduce/reduce conflict in state 146 resolved using rule opt_constraints -> constraint
+rejected rule (opt_constraints -> <empty>) in state 146
