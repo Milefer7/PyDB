@@ -33,6 +33,7 @@ class TestSqlCompiler(unittest.TestCase):
     # =========================================================
     def test_01_ddl_statements(self):
         test_cases = [
+            ("SHOW DATABASES;", {"type": "show_databases"}),
             ("CREATE DATABASE company_db;", {"type": "create_database", "database_name": "company_db"}),
             ("USE company_db;", {"type": "use_database", "database_name": "company_db"}),
             (
@@ -244,6 +245,86 @@ class TestSqlCompiler(unittest.TestCase):
               "table_source": {"table": "employees", "alias": None}, "join": [],
               "where": {"type": "compare_op", "operator": ">", "left": {"type": "math_op", "operator": "+", "left": {"type": "column", "value": "salary"}, "right": {"type": "column", "value": "bonus"}}, "right": {"type": "literal", "value": 60000}},
               "group_by": None, "order_by": None, "limit": None
+            }),
+            ("SELECT * FROM employees WHERE (age > 30 AND department = 'HR') OR salary > 100000;", {
+              "type": "select",
+              "select_list": [
+                "*"
+              ],
+              "table_source": {
+                "table": "employees",
+                "alias": None
+              },
+              "join": [],
+              "where": {
+                "type": "logical_op",
+                "operator": "OR",
+                "left": {
+                  "type": "logical_op",
+                  "operator": "AND",
+                  "left": {
+                    "type": "compare_op",
+                    "operator": ">",
+                    "left": {
+                      "type": "column",
+                      "value": "age"
+                    },
+                    "right": {
+                      "type": "literal",
+                      "value": 30
+                    }
+                  },
+                  "right": {
+                    "type": "compare_op",
+                    "operator": "=",
+                    "left": {
+                      "type": "column",
+                      "value": "department"
+                    },
+                    "right": {
+                      "type": "literal",
+                      "value": "HR"
+                    }
+                  }
+                },
+                "right": {
+                  "type": "compare_op",
+                  "operator": ">",
+                  "left": {
+                    "type": "column",
+                    "value": "salary"
+                  },
+                  "right": {
+                    "type": "literal",
+                    "value": 100000
+                  }
+                }
+              },
+              "group_by": None,
+              "order_by": None,
+              "limit": None
+            }),
+            ("SELECT id, name FROM employees AS emp;", {
+                "type": "select",
+                "select_list": [
+                  {
+                    "type": "column",
+                    "value": "id"
+                  },
+                  {
+                    "type": "column",
+                    "value": "name"
+                  }
+                ],
+                "table_source": {
+                  "table": "employees",
+                  "alias": "emp"
+                },
+                "join": [],
+                "where": None,
+                "group_by": None,
+                "order_by": None,
+                "limit": None
             }),
             ("SELECT COUNT(*), AVG(salary) FROM employees;", {
               "type": "select",
