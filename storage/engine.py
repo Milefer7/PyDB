@@ -89,5 +89,6 @@ class DatabaseManager:
     @timeit
     def dbm_select_data(self, sql_tree):
         df = self.metadata.load_table(sql_tree.get("table_source").get("table"))
+        current_db_path = self.database_path
         # 交给 Executor 执行查询流水线并打印
-        Executor.execute_select(df, sql_tree)
+        Executor.execute_select(df, sql_tree, current_db_path)

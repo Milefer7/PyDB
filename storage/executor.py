@@ -51,7 +51,9 @@ class Executor:
             return f"({left} {op} {right})"
             
         elif node_type == "column": 
-            return expr_node.get("value")
+            # 🌟 核心修改点：用反引号包围列名！
+            # 将 "c.id" 变成 "`c.id`"，解决 Pandas 无法识别带点号列名的问题
+            return f"`{expr_node.get('value')}`"
             
         elif node_type == "literal":
             val = expr_node.get("value")
@@ -65,54 +67,72 @@ class Executor:
         return df.drop(df.query(Executor.build_query_string(where_ast)).index)
 
     @staticmethod
-    def execute_update(df, assignments, where_ast):
-        # 1. 确定需要更新的行索引
-        if where_ast:
-            query_str = Executor.build_query_string(where_ast)
-            target_indices = df.query(query_str).index
-        else:
-            target_indices = df.index
-
-        # 2. 执行向量化更新
-        for assign in assignments:
-            col_name = assign.get("column")
-            value_ast = assign.get("value")
+    def execute_select(df, sql_tree, db_path="."): # 💡 新增 db_path 参数用于读取右表
+        # ==========================================================
+        # [核心新增]：处理多表 JOIN 与别名命名空间隔离
+        # ==========================================================
+        join_list = sql_tree.get("join")
+        if join_list:
+            # 1. 给主表的所有列加上前缀 (把 'id' 变成 'c.id')
+            table_info = sql_tree.get("table_source")
+            main_table = table_info.get("table")
+            main_alias = table_info.get("alias")
+            main_prefix = main_alias if main_alias else main_table
             
-            # 魔法：把 AST 转成字符串，例如 "(salary + 5000)"
-            expr_str = Executor.build_query_string(value_ast)
+            df = df.rename(columns=lambda x: f"{main_prefix}.{x}")
             
-            try:
-                # 极度优雅：利用 Pandas 原生的 eval() 执行向量化计算！
-                computed_series = df.loc[target_indices].eval(expr_str)
-                df.loc[target_indices, col_name] = computed_series
-            except Exception as e:
-                # 兜底方案：退回使用 eval_value 取字面量
-                df.loc[target_indices, col_name] = Executor.eval_value(value_ast)
+            # 2. 循环处理每一个 JOIN
+            for j in join_list:
+                r_table_info = j.get("table")
+                r_table = r_table_info.get("table")
+                r_alias = r_table_info.get("alias")
+                r_prefix = r_alias if r_alias else r_table
                 
-        # 返回更新后的 DataFrame 和 受影响的行数
-        return df, len(target_indices)
+                # 加载右表数据，并加上前缀 (把 'amount' 变成 'o.amount')
+                import os
+                right_df = pd.read_csv(os.path.join(db_path, f"{r_table}.csv"))
+                right_df = right_df.rename(columns=lambda x: f"{r_prefix}.{x}")
+                
+                # 解析连接条件 (例如 c.id = o.customer_id)
+                on_cond = j.get("on")
+                left_col = on_cond.get("left").get("value")
+                right_col = on_cond.get("right").get("value")
+                
+                join_type = "left" if j.get("type").upper() == "LEFT" else "inner"
+                
+                # 执行 Pandas 底层的极速矩阵合并
+                df = pd.merge(df, right_df, left_on=left_col, right_on=right_col, how=join_type)
 
-    @staticmethod
-    def execute_select(df, sql_tree):
+        
+
+        # ==========================================================
+        # 原有逻辑：条件过滤、排序、分组、截断及聚合计算
+        # ==========================================================
         # 条件过滤
         where_ast = sql_tree.get("where")
-        if where_ast: df = df.query(Executor.build_query_string(where_ast))
+        if where_ast: 
+            query_str = Executor.build_query_string(where_ast)
+            df = df.query(query_str)
 
         # 排序
         order_ast = sql_tree.get("order_by")
-        if order_ast: df = df.sort_values(by=[i.get("column") for i in order_ast], ascending=[i.get("direction").upper() == "ASC" for i in order_ast])
+        if order_ast: 
+            df = df.sort_values(
+                by=[i.get("column") for i in order_ast], 
+                ascending=[i.get("direction").upper() == "ASC" for i in order_ast]
+            )
 
         # 分组去重
         group_by_ast = sql_tree.get("group_by")
         if group_by_ast:
-            # group_by_ast 是一个列表，例如 ["department"]
-            # 在没有聚合函数配合时，GROUP BY 相当于对这些列进行去重 (DISTINCT)
             df = df.drop_duplicates(subset=group_by_ast)
 
         # 截断
         limit_ast = sql_tree.get("limit")
-        if limit_ast: df = df.head(int(limit_ast))
+        if limit_ast: 
+            df = df.head(int(limit_ast))
 
+        # 投影与聚合
         select_list_ast = sql_tree.get("select_list")
         if select_list_ast != ["*"]:
             display_columns = []
@@ -159,12 +179,15 @@ class Executor:
                 # 将聚合结果字典转化为只有一行数据的 DataFrame
                 df = pd.DataFrame([result_dict])
             else:
-                # [原本的逻辑]：如果没有聚合函数，仅仅是提取列
+                # 只有在这时，列名是精确匹配类似 'c.username' 的
                 df = df[display_columns]
 
         # 5. 格式化输出终端表格
         if df.empty:
-            print("Empty set", end='')
+            print("Empty set")
         else:
+            from tabulate import tabulate
             print(tabulate(df, headers='keys', tablefmt='psql', showindex=False))
-            print(f"{len(df)} row(s) in set.", end='')
+            print(f"{len(df)} row(s) in set.")
+            
+        return df # 建议把处理完的 df return 回去，方便测试框架做断言
