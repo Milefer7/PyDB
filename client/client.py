@@ -30,8 +30,8 @@ def sql_client():
             #         print(f"  类型: {token[0]}, 值: {token[1]}")
             #     print()
             parser_tree = parser.parse(tokens)
-            print(json.dumps(parser_tree, indent=2))
-            # router(parser_tree, db)
+            # print(json.dumps(parser_tree, indent=2))
+            myRouter(parser_tree, db)
 
         except Exception as e:
             # print(Fore.RED + f"An error occurred: {e}" + Style.RESET_ALL)

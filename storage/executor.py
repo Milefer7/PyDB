@@ -66,6 +66,36 @@ class Executor:
         if not where_ast: return df.iloc[0:0]
         return df.drop(df.query(Executor.build_query_string(where_ast)).index)
 
+    
+    @staticmethod
+    def execute_update(df, assignments, where_ast):
+        # 1. 确定需要更新的行索引
+        if where_ast:
+            query_str = Executor.build_query_string(where_ast)
+            target_indices = df.query(query_str).index
+        else:
+            target_indices = df.index
+
+        # 2. 执行向量化更新
+        for assign in assignments:
+            col_name = assign.get("column")
+            value_ast = assign.get("value")
+            
+            # 魔法：把 AST 转成字符串，例如 "(salary + 5000)"
+            expr_str = Executor.build_query_string(value_ast)
+            
+            try:
+                # 极度优雅：利用 Pandas 原生的 eval() 执行向量化计算！
+                computed_series = df.loc[target_indices].eval(expr_str)
+                df.loc[target_indices, col_name] = computed_series
+            except Exception as e:
+                # 兜底方案：退回使用 eval_value 取字面量
+                df.loc[target_indices, col_name] = Executor.eval_value(value_ast)
+                
+        # 返回更新后的 DataFrame 和 受影响的行数
+        return df, len(target_indices)
+
+
     @staticmethod
     def execute_select(df, sql_tree, db_path="."): # 💡 新增 db_path 参数用于读取右表
         # ==========================================================
@@ -102,8 +132,6 @@ class Executor:
                 
                 # 执行 Pandas 底层的极速矩阵合并
                 df = pd.merge(df, right_df, left_on=left_col, right_on=right_col, how=join_type)
-
-        
 
         # ==========================================================
         # 原有逻辑：条件过滤、排序、分组、截断及聚合计算
@@ -157,8 +185,8 @@ class Executor:
                         display_name = f"{func_name}(*)"
                         target_col = None
                     else:
-                        # 借用翻译器拿到括号里的表达式或列名
-                        target_col = Executor.build_query_string(args)
+                        # 🌟 修正：对于 df['列名'] 取值，直接拿原始纯文本字符串即可，绝对不能带反引号！
+                        target_col = args.get("value") if isinstance(args, dict) else args
                         display_name = f"{func_name}({target_col})"
                     
                     # 极速向量化计算
@@ -189,5 +217,5 @@ class Executor:
             from tabulate import tabulate
             print(tabulate(df, headers='keys', tablefmt='psql', showindex=False))
             print(f"{len(df)} row(s) in set.")
-            
+        # df.to_csv("./test/golden_data/query_result.csv", index=False, encoding='utf-8')
         return df # 建议把处理完的 df return 回去，方便测试框架做断言

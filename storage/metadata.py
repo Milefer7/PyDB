@@ -5,7 +5,7 @@ import pandas as pd
 from transaction import log
 
 class MetadataManager:
-    def __init__(self, root_dir='database'):
+    def __init__(self, root_dir='./database'):
         self.root_dir = root_dir
         self.database_name = None
         self.database_path = None

@@ -2,7 +2,7 @@ from storage.engine import *
 from utils.util import *
 
 
-def router(sql_tree, db):
+def myRouter(sql_tree, db):
     # 打印精美的 AST，方便你在调试时查看生成的树结构
     # print("解析生成的 AST 树: ")
     # print(json.dumps(sql_tree, indent=2))
