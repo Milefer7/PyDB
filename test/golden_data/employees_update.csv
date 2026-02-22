@@ -1,0 +1,6 @@
+id,name,age,salary,dept_id,performance_score,bonus
+1,Alice,28,45000.0,2,4.5,5000
+2,John Doe,32,55000.0,1,3.8,0
+3,Alice Johnson,45,72000.0,2,4.9,5000
+4,Bob Smith,22,64000.0,1,4.2,5000
+5,Charlie HR,29,30000.0,3,3.0,0

@@ -1,0 +1,2 @@
+COUNT(*),AVG(salary)
+4,59000

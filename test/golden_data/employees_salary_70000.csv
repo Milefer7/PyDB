@@ -1,0 +1,3 @@
+id,name,age,salary,dept_id,performance_score,bonus
+2,John Doe,32,55000.0,1,3.8,0
+3,Alice Johnson,45,72000.0,2,4.9,5000

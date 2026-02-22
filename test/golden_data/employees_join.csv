@@ -1,0 +1,5 @@
+c.id,c.username,o.amount,o.order_date
+1,Alice,250.5,2026-02-20
+1,Alice,120.0,2026-02-21
+2,Bob,999.99,2026-02-21
+3,Charlie,45.0,2026-02-22
