@@ -35,15 +35,15 @@ def myRouter(sql_tree, db):
         # ==========================================
         case "create_table":
             if db.database_name is None:
-                print("Error: No database selected. Please use 'USE <database_name>' first.")
+                raise ValueError("Error: No database selected. Please use 'USE <database_name>' first.")
             else:
                 db.dbm_create_table(sql_tree)
                 
         case "drop_table":
             if db.database_name is None:
-                print("Error: No database selected.")
+                raise ValueError("No database selected.")
             elif not find_table(sql_tree.get("table_name"), db.database_path):
-                print(f"Error: Table '{sql_tree.get('table_name')}' does not exist.")
+                raise ValueError(f"Error: Table '{sql_tree.get('table_name')}' does not exist.")
             else:
                 db.dbm_drop_table(sql_tree)
 
@@ -53,13 +53,11 @@ def myRouter(sql_tree, db):
         case "insert" | "update" | "delete":
             # 💡 修改：将同类型校验合并，因为新版AST中它们的表名都在第一层的 "table_name"
             if db.database_name is None:
-                print("Error: No database selected.")
-                return
+                raise ValueError("Error: No database selected.")
                 
             table_name = sql_tree.get("table_name")
             if not find_table(table_name, db.database_path):
-                print(f"Error: Table '{table_name}' does not exist.")
-                return
+                raise ValueError(f"Error: Table '{table_name}' does not exist.")
                 
             # 根据具体类型分发到具体的执行器引擎
             if sql_type == "insert":
@@ -74,14 +72,12 @@ def myRouter(sql_tree, db):
         # ==========================================
         case "select":
             if db.database_name is None:
-                print("Error: No database selected.")
-                return
+                raise ValueError("Error: No database selected.")
                 
             # 新版 AST 的表名在 table_source 字典里的 table 键中
             table_name = sql_tree.get("table_source").get("table")
             if not find_table(table_name, db.database_path):
-                print(f"Error: Table '{table_name}' does not exist.")
-                return
+                raise ValueError(f"Error: Table '{table_name}' does not exist.")
                 
             # 💡 亮点：不再区分 select_all 还是 simple_select
             # 将整棵树 (AST) 原封不动地交给 Pandas 执行引擎，由它按流水线解析
@@ -91,4 +87,4 @@ def myRouter(sql_tree, db):
         # 5. 未知兜底
         # ==========================================
         case _:
-            print(f"Error: Unsupported SQL operation type '{sql_type}'.")
+            raise ValueError(f"Error: Unsupported SQL operation type: '{sql_type}'.")

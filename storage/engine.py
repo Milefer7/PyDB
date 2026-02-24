@@ -55,8 +55,7 @@ class DatabaseManager:
         is_valid, full_new_df = Validator.validate_insert(
             sql_tree.get("columns"), sql_tree.get("values"), 
             schema_df, existing_df, Executor.eval_value
-        )
-        if not is_valid: return
+        ) # 如果有错，这里直接就爆炸了（带着 ValueError 飞到 client.py）如果能走过这一行，说明一定 is_valid，不需要再做 if not is_valid 判断了！
             
         # 3. 交给 Metadata 落盘
         full_new_df.to_csv(self.metadata.get_table_path(table_name), mode='a', header=False, index=False)

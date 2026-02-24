@@ -62,7 +62,7 @@ class SqlLexer(Lexer):
         return t
 
     def error(self, t):
-        print(f"词法解析错误：无法识别的字符 '{t.value[0]}' (位置：{self.index})")
+        print(f"Lexical error: Unrecognized character '{t.value[0]}' (Position: {self.index})")
         self.index += 1
 
 
@@ -86,9 +86,9 @@ class SqlParser(Parser):
 
     def error(self, p):
         if p:
-            print(f"语法解析错误: 意外的标记 '{p.value}' (类型: {p.type}, 行号: {p.lineno})")
+            raise SyntaxError(f"Syntax error: Unexpected token '{p.value}' (Type: {p.type}, Line: {p.lineno})")
         else:
-            print("语法解析错误: 语句未完整结束 (EOF)")
+            raise SyntaxError("Syntax error: Unexpected end of statement (EOF)")
 
     @_('create_database', 'drop_database', 'show_databases', 'use_database',
        'create_table', 'drop_table', 

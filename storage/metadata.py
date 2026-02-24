@@ -12,8 +12,7 @@ class MetadataManager:
 
     def show_databases(self):
         if not os.path.exists(self.root_dir):
-            print('No database exists.', end='')
-            return
+            raise FileExistsError(f"No database exists.")
         databases = [item for item in os.listdir(self.root_dir) if os.path.isdir(os.path.join(self.root_dir, item))]
         print(f"Databases: {', '.join(databases)}" if databases else "No databases found.", end='')
 
@@ -25,7 +24,7 @@ class MetadataManager:
             log.init_log(db_path)
             print(f"Query OK, 1 row affected. Database '{db_name}' created.", end='')
         else:
-            print(f"Error: Database '{db_name}' already exists.", end='')
+            raise FileExistsError(f"Error: Database '{db_name}' already exists.")
 
     def drop_database(self, db_name):
         db_path = os.path.join(self.root_dir, db_name)
@@ -33,7 +32,7 @@ class MetadataManager:
             shutil.rmtree(db_path)
             print(f"Query OK. Database '{db_name}' dropped.", end='')
         else:
-            print(f"Error: Database '{db_name}' does not exist.", end='')
+            raise FileNotFoundError(f"Error: Database '{db_name}' does not exist.")
 
     def use_database(self, db_name):
         # 1. 拼凑出目标数据库的物理路径
@@ -41,8 +40,7 @@ class MetadataManager:
         
         # 2. 检查该路径（数据库文件夹）是否存在
         if not os.path.exists(target_db_path):
-            print(f"Error: Unknown database '{db_name}'.", end='')
-            return False  # 切换失败，直接返回
+            raise ValueError(f"Error: Unknown database '{db_name}'.")
             
         # 3. 校验通过，更新系统当前的上下文状态
         self.database_name = db_name
@@ -67,8 +65,7 @@ class MetadataManager:
         data_path, schema_path = self.get_table_path(table_name), self.get_schema_path(table_name)
 
         if os.path.exists(data_path) or os.path.exists(schema_path):
-            print(f"Error: Table '{table_name}' already exists.", end='')
-            return
+            raise FileExistsError(f"Error: Table '{table_name}' already exists.")
 
         schema = [{"name": c.get("name"), "data_type": c.get("data_type"), 
                    "is_primary_key": 'primary key' in c.get("constraints", []),
