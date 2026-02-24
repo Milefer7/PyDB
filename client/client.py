@@ -18,7 +18,7 @@ def sql_client():
     last_error_msg = None
     prompt_egg = True
     
-    print(Fore.GREEN + "Welcome to use PyDB." + Style.RESET_ALL)
+    print(Fore.GREEN + Style.BRIGHT +"[Welcome to PyDB]" + Style.RESET_ALL)
     # print("提示: 输入 '+ai;' 可开启 AI 智能诊断助手，输入 '-ai;' 可关闭。")
 
     # 监听控制台

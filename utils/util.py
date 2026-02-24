@@ -1,17 +1,23 @@
 import time
 import os
+from colorama import Fore, Style
 
 
 def user_input():
     info_input = ''
     while True:
+        # 定义带颜色的提示符
+        # Fore.CYAN 让文字变青色，Style.BRIGHT 让颜色更亮，Style.RESET_ALL 确保用户输入的内容恢复默认颜色
+        prompt_main = f"{Fore.CYAN}{Style.BRIGHT}pysql> {Style.RESET_ALL}"
+        prompt_cont = f"{Fore.CYAN}{Style.BRIGHT}>>>> {Style.RESET_ALL}"
+
         if info_input == '':
             # 第一次提示
-            current_line = input('pysql> ')
+            current_line = input(prompt_main)
             info_input = current_line
         else:
             # 当输入不完整时，继续提示输入
-            current_line = input('>>>> ')
+            current_line = input(prompt_cont)
             # 🌟 关键修改：拼接时增加一个空格，防止跨行单词粘连
             info_input += " " + current_line
 
