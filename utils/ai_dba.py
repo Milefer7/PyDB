@@ -1,4 +1,4 @@
-from openai import OpenAI
+from zhipuai import ZhipuAI
 from colorama import Fore, Style
 import os, yaml
 
@@ -15,13 +15,11 @@ def load_config():
         raise ValueError(f"配置文件格式错误：{e}")
 
 config = load_config()
-API_KEY = config["deepseek"]["api_key"]
-# 这里以 DeepSeek 为例。如果是智谱，换成智谱的 base_url 和 model 即可
-BASE_URL = config["deepseek"]["base_url"]
-MODEL_NAME = config["deepseek"]["model_name"]
+API_KEY = config["zhipu"]["api_key"]
+MODEL_NAME = config["zhipu"]["model_name"]
 
 # 初始化客户端
-client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+client = ZhipuAI(api_key=API_KEY)
 
 def diagnose_sql_error(sql_query, error_msg):
     """
@@ -36,23 +34,34 @@ def diagnose_sql_error(sql_query, error_msg):
 
     请你：
     1. 用一句简短、亲切的话向用户解释这个报错是什么意思（错在哪里）。
-    2. 直接给出修改后的正确 SQL 语句。
-    注意：不需要啰嗦的自我介绍，直接给出诊断结论。
+    2. 不要分点回答。不要啰嗦，不要说任何废话。
+    3. 写出正确的sql语句。如果你不确定正确的sql语句是什么，你就不要写。
     """
     
     try:
-        # 友好的终端提示
-        print(Fore.CYAN + "🤖 [AI DBA] 正在为您诊断错误，请稍候..." + Style.RESET_ALL)
-        
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
                 {"role": "system", "content": "你是一个有用的数据库助手。"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3 # 降低发散度，保证回答的准确性
+            temperature=0.3, # 降低发散度，保证回答的准确性
+            stream=True  # 开启流式传输
         )
-        return response.choices[0].message.content
+        
+        print(Fore.YELLOW + "[AI DBA 诊断建议]:" + Style.RESET_ALL, end=" ")
+        
+        full_content = ""
+        # 🌟 循环读取数据块（Chunks）
+        for chunk in response:
+            content = chunk.choices[0].delta.content
+            if content:
+                print(Fore.YELLOW + content + Style.RESET_ALL, end="", flush=True)
+                full_content += content
+        print("") 
+        return full_content
         
     except Exception as e:
-        return f"AI 诊断模块通讯失败，请检查网络或 API Key 设置。({str(e)})"
+        error_msg = f"\n AI 诊断模块通讯失败，请检查网络、API Key 或模型名称设置。\n详细报错: {str(e)}\n"
+        print(Fore.RED + error_msg + Style.RESET_ALL)
+        return error_msg
