@@ -3,7 +3,7 @@ from utils.util import *
 
 
 def myRouter(sql_tree, db):
-    # 打印精美的 AST，方便你在调试时查看生成的树结构
+    # 打印精美的 AST，方便在调试时查看生成的树结构
     # print("解析生成的 AST 树: ")
     # print(json.dumps(sql_tree, indent=2))
     
@@ -24,7 +24,6 @@ def myRouter(sql_tree, db):
             DatabaseManager.dbm_create_database(sql_tree)
             
         case "drop_database":
-            # 论文点：新增的删库功能路由
             DatabaseManager.dbm_drop_database(sql_tree)
             
         case "use_database":
@@ -51,7 +50,7 @@ def myRouter(sql_tree, db):
         # 3. DML: 增删改操作
         # ==========================================
         case "insert" | "update" | "delete":
-            # 💡 修改：将同类型校验合并，因为新版AST中它们的表名都在第一层的 "table_name"
+            # 修改：将同类型校验合并，因为AST中它们的表名都在第一层的 "table_name"
             if db.database_name is None:
                 raise ValueError("Error: No database selected.")
                 
@@ -79,8 +78,7 @@ def myRouter(sql_tree, db):
             if not find_table(table_name, db.database_path):
                 raise ValueError(f"Error: Table '{table_name}' does not exist.")
                 
-            # 💡 亮点：不再区分 select_all 还是 simple_select
-            # 将整棵树 (AST) 原封不动地交给 Pandas 执行引擎，由它按流水线解析
+            # 重构：不再区分 select_all 还是 simple_select。将整棵树 (AST) 原封不动地交给 Pandas 执行引擎，由它按流水线解析
             db.dbm_select_data(sql_tree)
 
         # ==========================================

@@ -4,6 +4,7 @@ from router.router import *
 from colorama import Fore, Style
 import json
 from utils.ai_dba import diagnose_sql_error
+from transaction.log import write_log
 
 def sql_client():
     # 定义本次会话的全局变量db
@@ -53,6 +54,10 @@ def sql_client():
             parser_tree = parser.parse(tokens)
             # print(json.dumps(parser_tree, indent=2))
             myRouter(parser_tree, db)
+
+            # 代码能走到这里没有抛出异常，说明 SQL 执行成功！记录 INFO 日志
+            if db.database_path:
+                write_log(db.database_path, user_input, status="SUCCESS")
             
             # 如果一条 SQL 成功执行到底，说明没有报错，清空之前的错误记忆
             last_failed_sql = None
@@ -66,6 +71,10 @@ def sql_client():
             # 记住案发现场，留给后面的 '+ai;' 使用
             last_failed_sql = user_input
             last_error_msg = raw_error
+
+            # 记录 ERROR 日志
+            if db.database_path:
+                write_log(db.database_path, user_input, status="ERROR", error_msg=raw_error)
             
             # 根据开关状态决定是否召唤 AI
             if ai_dba_enabled:

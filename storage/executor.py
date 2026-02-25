@@ -185,7 +185,7 @@ class Executor:
                         display_name = f"{func_name}(*)"
                         target_col = None
                     else:
-                        # 🌟 修正：对于 df['列名'] 取值，直接拿原始纯文本字符串即可，绝对不能带反引号！
+                        # 对于 df['列名'] 取值，直接拿原始纯文本字符串即可，绝对不能带反引号！
                         target_col = args.get("value") if isinstance(args, dict) else args
                         display_name = f"{func_name}({target_col})"
                     
