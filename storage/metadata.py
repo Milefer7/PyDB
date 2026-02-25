@@ -3,6 +3,7 @@ import os
 import shutil
 import pandas as pd
 from transaction import log
+from tabulate import tabulate
 
 class MetadataManager:
     def __init__(self, root_dir='./database'):
@@ -14,7 +15,15 @@ class MetadataManager:
         if not os.path.exists(self.root_dir):
             raise FileExistsError(f"No database exists.")
         databases = [item for item in os.listdir(self.root_dir) if os.path.isdir(os.path.join(self.root_dir, item))]
-        print(f"Databases: {', '.join(databases)}" if databases else "No databases found.", end='')
+        if databases:
+            # 将一维列表转换为二维列表，因为 tabulate 需要这种格式，例如: [['geek'], ['hello']]
+            table_data = [[db] for db in databases]
+            
+            # 打印 MySQL 风格的表格
+            print(tabulate(table_data, headers=['Database'], tablefmt='psql'))
+            print(f"{len(databases)} row(s) in set.", end='')
+        else:
+            print("Empty set", end='')
 
     def create_database(self, db_name):
         if not os.path.exists(self.root_dir): os.makedirs(self.root_dir)
