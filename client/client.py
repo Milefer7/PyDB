@@ -32,7 +32,7 @@ def sql_client():
             # 清理输入，方便做命令拦截
             clean_input = user_input.strip().lower()
             
-            # 🌟 2. 拦截系统级命令：开启或关闭 AI
+            # 拦截系统级命令：开启或关闭 AI
             if clean_input in ('+ai;'):
                 ai_dba_enabled = True
                 print(Fore.GREEN + "[系统通知]: AI DBA 智能诊断已开启！" + Style.RESET_ALL)

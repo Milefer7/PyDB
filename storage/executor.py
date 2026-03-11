@@ -43,7 +43,7 @@ class Executor:
                 elif op in ("<>", "!="): op = "!="
                 return f"{left} {op} {right}"
                 
-        # 👇 新增这一块：让翻译器支持数学运算 (math_op)
+        # 新增这一块：让翻译器支持数学运算 (math_op)
         elif node_type == "math_op":
             left = Executor.build_query_string(expr_node.get("left"))
             right = Executor.build_query_string(expr_node.get("right"))
@@ -51,7 +51,7 @@ class Executor:
             return f"({left} {op} {right})"
             
         elif node_type == "column": 
-            # 🌟 核心修改点：用反引号包围列名！
+            # 核心修改点：用反引号包围列名！
             # 将 "c.id" 变成 "`c.id`"，解决 Pandas 无法识别带点号列名的问题
             return f"`{expr_node.get('value')}`"
             
@@ -81,13 +81,13 @@ class Executor:
             col_name = assign.get("column")
             value_ast = assign.get("value")
             
-            # 魔法：把 AST 转成字符串，例如 "(salary + 5000)"
+            # 把 AST 转成字符串，例如 "(salary + 5000)"
             expr_str = Executor.build_query_string(value_ast)
             
             try:
                 # 极度优雅：利用 Pandas 原生的 eval() 执行向量化计算！
-                computed_series = df.loc[target_indices].eval(expr_str)
-                df.loc[target_indices, col_name] = computed_series
+                computed_series = df.loc[target_indices].eval(expr_str) # 计算新series
+                df.loc[target_indices, col_name] = computed_series # 赋值
             except Exception as e:
                 # 兜底方案：退回使用 eval_value 取字面量
                 df.loc[target_indices, col_name] = Executor.eval_value(value_ast)
@@ -97,7 +97,7 @@ class Executor:
 
 
     @staticmethod
-    def execute_select(df, sql_tree, db_path="."): # 💡 新增 db_path 参数用于读取右表
+    def execute_select(df, sql_tree, db_path="."): # 新增 db_path 参数用于读取右表
         # ==========================================================
         # [核心新增]：处理多表 JOIN 与别名命名空间隔离
         # ==========================================================
@@ -218,4 +218,4 @@ class Executor:
             print(tabulate(df, headers='keys', tablefmt='psql', showindex=False))
             print(f"{len(df)} row(s) in set.")
         # df.to_csv("./test/golden_data/query_result.csv", index=False, encoding='utf-8')
-        return df # 建议把处理完的 df return 回去，方便测试框架做断言
+        return df # 把处理完的 df return 回去，方便测试框架做断言
