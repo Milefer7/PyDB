@@ -6,3 +6,6 @@ config
 .vscode
 .venv
 __pycache__/
+test/计算机考研调剂备选表.xlsx
+test/tiaoji.py
+.gitignore

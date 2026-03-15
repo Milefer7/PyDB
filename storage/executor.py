@@ -18,11 +18,11 @@ class Executor:
             return f"({Executor.build_query_string(expr_node.get('left'))} {op} {Executor.build_query_string(expr_node.get('right'))})"
             
         elif node_type == "compare_op":
-            # 1. 提取原始操作符并转大写，提取左侧列名
+            # 提取原始操作符并转大写，提取左侧列名
             op = expr_node.get("operator").upper()
             left = Executor.build_query_string(expr_node.get("left"))
             
-            # 核心修改点：单独拦截并转译 LIKE 操作符
+            # 单独拦截并转译 LIKE 操作符
             if op == "LIKE":
                 right_node = expr_node.get("right")
                 raw_val = right_node.get("value")
@@ -36,14 +36,14 @@ class Executor:
                 # 返回 Pandas 特有的 Series.str.match() 语法
                 return f"{left}.str.match('{regex_pattern}', na=False)"
                 
-            # 2. 如果不是 LIKE，走常规的数学比较逻辑 (>, <, ==, !=)
+            # 如果不是 LIKE，走常规的数学比较逻辑 (>, <, ==, !=)
             else:
                 right = Executor.build_query_string(expr_node.get("right"))
                 if op == "=": op = "=="
                 elif op in ("<>", "!="): op = "!="
                 return f"{left} {op} {right}"
                 
-        # 新增这一块：让翻译器支持数学运算 (math_op)
+        # 支持数学运算 (math_op)
         elif node_type == "math_op":
             left = Executor.build_query_string(expr_node.get("left"))
             right = Executor.build_query_string(expr_node.get("right"))
@@ -51,7 +51,6 @@ class Executor:
             return f"({left} {op} {right})"
             
         elif node_type == "column": 
-            # 核心修改点：用反引号包围列名！
             # 将 "c.id" 变成 "`c.id`"，解决 Pandas 无法识别带点号列名的问题
             return f"`{expr_node.get('value')}`"
             
